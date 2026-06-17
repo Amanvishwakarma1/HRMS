@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./modules/auth/pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -131,6 +132,12 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
+=======
+import AppRoutes from "./routes/AppRoutes";
+
+function App() {
+  return <AppRoutes />;
+>>>>>>> 077d9bac6d2e1f9ec4139220792812a0a3ab0c43
 }
 
 export default App;
