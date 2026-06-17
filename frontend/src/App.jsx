@@ -1,122 +1,136 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "./modules/auth/pages/Login";
+import DashboardLayout from "./layouts/DashboardLayout";
+
+// Core Dashboard Router
+import DashboardRouter from "./modules/dashboard/DashboardRouter";
+
+// Employee Module
+import Employee from "./modules/employee/pages/Employee";
+import EmployeeList from "./modules/employee/pages/EmployeeList";
+import AddEmployee from "./modules/employee/pages/AddEmployee";
+import Departments from "./modules/employee/pages/Departments";
+import Designations from "./modules/employee/pages/Designations";
+import OrganizationChart from "./modules/employee/pages/OrganizationChart";
+import EditEmployee from "./modules/employee/pages/EditEmployee";
+
+// Leave Module
+import LeaveLayout from "./modules/leave/Pages/LeaveLayout";
+import LeaveBalance from "./modules/leave/Pages/LeaveBalance";
+import ApplyLeave from "./modules/leave/Pages/applyLeave";
+import LeaveCalendar from "./modules/leave/Pages/LeaveCalendar";
+import LeavePolicy from "./modules/leave/Pages/LeavePolicy";
+import LeaveHistory from "./modules/leave/Pages/LeaveHistory";
+import LeaveApproval from "./modules/leave/Pages/LeaveApproval";
+
+// Expense Module
+import ExpenseLayout from "./modules/expense/ExpenseLayout";
+import ExpenseHistory from "./modules/expense/pages/ExpenseHistory";
+import SubmitExpense from "./modules/expense/pages/SubmitExpense";
+import ReimbursementStatus from "./modules/expense/pages/ReimbursementStatus";
+import ExpenseApproval from "./modules/expense/pages/ExpenseApproval";
+import ExpensePolicy from "./modules/expense/pages/ExpensePolicy";
+
+// Payroll Module
+import PayrollLayout from "./modules/payroll/PayrollLayout";
+import PayrollProcessing from "./modules/payroll/pages/PayrollProcessing";
+import Payslips from "./modules/payroll/pages/Payslips";
+import SalaryStructure from "./modules/payroll/pages/SalaryStructure";
+import TaxDetails from "./modules/payroll/pages/TaxDetails";
+import Bonus from "./modules/payroll/pages/Bonus";
+import Reimbursement from "./modules/payroll/pages/Reimbursement";
+
+// Attendance Module
+import AttendanceLayout from "./modules/attendance/pages/AttendanceLayout";
+import AttendanceDashboard from "./modules/attendance/pages/Dashboard";
+import AttendanceCalendar from "./modules/attendance/pages/AttendanceCalendar";
+import AttendanceHistory from "./modules/attendance/pages/AttendanceHistory";
+import Regularization from "./modules/attendance/pages/Regularization";
+import ShiftManagement from "./modules/attendance/pages/ShiftManagement";
+import Overtime from "./modules/attendance/pages/Overtime";
+import GeoFence from "./modules/attendance/pages/GeoFence";
+
+// Notification Module
+import NotificationLayout from "./modules/notifications/pages/NotificationLayout";
+import Inbox from "./modules/notifications/pages/Inbox";
+import Alerts from "./modules/notifications/pages/Alerts";
+import Announcements from "./modules/notifications/pages/Announcements";
+
+// Placeholder for org settings
+const OrgSettingsPage = () => <h2>Org / Settings Module</h2>;
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        
+        <Route path="/" element={<DashboardLayout />}>
+          {/* 1. Home Dashboard */}
+          <Route index element={<DashboardRouter />} /> 
+          
+          {/* 2. Me / Attendance Module */}
+          <Route path="attendance" element={<AttendanceLayout />}>
+            <Route index element={<AttendanceDashboard />} />
+            <Route path="calendar" element={<AttendanceCalendar />} />
+            <Route path="history" element={<AttendanceHistory />} />
+            <Route path="regularization" element={<Regularization />} />
+            <Route path="shifts" element={<ShiftManagement />} />
+            <Route path="overtime" element={<Overtime />} />
+            <Route path="geofence" element={<GeoFence />} />
+          </Route>
 
-      <div className="ticks"></div>
+          {/* Leave Module */}
+          <Route path="leave" element={<LeaveLayout />}>
+            <Route index element={<LeaveBalance />} />
+            <Route path="apply" element={<ApplyLeave />} />
+            <Route path="calendar" element={<LeaveCalendar />} />
+            <Route path="policy" element={<LeavePolicy />} />
+            <Route path="history" element={<LeaveHistory />} />
+            <Route path="approval" element={<LeaveApproval />} />
+          </Route>
+          
+          {/* 3. Inbox / Notifications Module */}
+          <Route path="notifications" element={<NotificationLayout />}>
+            <Route index element={<Inbox />} />
+            <Route path="alerts" element={<Alerts />} />
+            <Route path="announcements" element={<Announcements />} />
+          </Route>
+          
+          {/* 4. My Team / Employees Module */}
+          <Route path="employees" element={<Employee />}>
+            <Route index element={<EmployeeList />} />
+            <Route path="add" element={<AddEmployee />} />
+            <Route path="departments" element={<Departments />} />
+            <Route path="designations" element={<Designations />} />
+            <Route path="chart" element={<OrganizationChart />} />
+            <Route path="edit/:id" element={<EditEmployee />} />
+          </Route>
+          
+          {/* 5. My Finance / Payroll & Expenses */}
+          <Route path="payroll" element={<PayrollLayout />}>
+            <Route index element={<PayrollProcessing />} />
+            <Route path="payslips" element={<Payslips />} />
+            <Route path="structure" element={<SalaryStructure />} />
+            <Route path="taxes" element={<TaxDetails />} />
+            <Route path="bonus" element={<Bonus />} />
+            <Route path="reimbursements" element={<Reimbursement />} />
+          </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <Route path="expenses" element={<ExpenseLayout />}>
+            <Route index element={<ExpenseHistory />} />
+            <Route path="submit" element={<SubmitExpense />} />
+            <Route path="status" element={<ReimbursementStatus />} />
+            <Route path="approvals" element={<ExpenseApproval />} />
+            <Route path="policy" element={<ExpensePolicy />} />
+          </Route>
+          
+          {/* 6. Org Settings */}
+          <Route path="settings" element={<OrgSettingsPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

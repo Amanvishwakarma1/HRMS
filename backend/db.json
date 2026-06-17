@@ -1,0 +1,502 @@
+{
+  "employees": [
+    {
+      "id": "EMP-001",
+      "name": "Alice Smith",
+      "email": "alice@company.com",
+      "department": "Engineering",
+      "designation": "Frontend Developer",
+      "status": "Active",
+      "joinDate": "2023-01-15"
+    },
+    {
+      "id": "EMP-002",
+      "name": "Bob Johnson",
+      "email": "bob@company.com",
+      "department": "HR",
+      "designation": "HR Manager",
+      "status": "Active",
+      "joinDate": "2022-11-01"
+    },
+    {
+      "id": "EMP-003",
+      "name": "Charlie Davis",
+      "email": "charlie@company.com",
+      "department": "Sales",
+      "designation": "Account Executive",
+      "status": "On Leave",
+      "joinDate": "2024-02-10"
+    },
+    {
+      "id": "EMP-004",
+      "name": "Aman Vishwakarma",
+      "email": "aman@company.com",
+      "department": "Engineering",
+      "designation": "Fullstack Developer",
+      "status": "Active",
+      "joinDate": "2025-06-01"
+    }
+  ],
+  "leaves": [
+    {
+      "id": "REQ-101",
+      "employeeName": "Alice Smith",
+      "type": "Sick Leave",
+      "startDate": "2026-06-20",
+      "endDate": "2026-06-22",
+      "reason": "Medical appointment and recovery",
+      "status": "Pending",
+      "appliedOn": "2026-06-15"
+    },
+    {
+      "id": "REQ-102",
+      "employeeName": "Bob Johnson",
+      "type": "Casual Leave",
+      "startDate": "2026-07-01",
+      "endDate": "2026-07-05",
+      "reason": "Family vacation",
+      "status": "Approved",
+      "appliedOn": "2026-06-10"
+    }
+  ],
+  "attendance_status": {
+    "employee": {
+      "isClockedIn": false,
+      "lastCheckInTime": null,
+      "accumulatedTime": 20,
+      "elapsedTime": 20,
+      "punches": [
+        {
+          "in": "12:56 pm",
+          "out": "12:56 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:57 pm",
+          "out": "12:57 pm",
+          "location": "Home",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:57 pm",
+          "out": "12:57 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:58 pm",
+          "out": "12:58 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        }
+      ],
+      "date": "2026-06-17"
+    }
+  },
+  "attendance_logs": [
+    {
+      "username": "employee",
+      "date": "2026-06-17",
+      "status": "Half Day",
+      "checkIn": "12:56 pm",
+      "checkOut": "12:58 pm",
+      "activeHours": 0.01,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "12:56 pm",
+          "out": "12:56 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:57 pm",
+          "out": "12:57 pm",
+          "location": "Home",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:57 pm",
+          "out": "12:57 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        },
+        {
+          "in": "12:58 pm",
+          "out": "12:58 pm",
+          "location": "Office",
+          "duration": "0.00 hrs"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-05-28",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-05-29",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-01",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-02",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-03",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-04",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-05",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-08",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-09",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-10",
+      "status": "Late",
+      "checkIn": "09:45 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 7.75,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:45 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-11",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-12",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-15",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    },
+    {
+      "username": "employee",
+      "date": "2026-06-16",
+      "status": "Present",
+      "checkIn": "09:00 AM",
+      "checkOut": "06:30 PM",
+      "activeHours": 8.5,
+      "breakHours": 1,
+      "punches": [
+        {
+          "in": "09:00 AM",
+          "out": "01:00 PM",
+          "location": "Office"
+        },
+        {
+          "in": "02:00 PM",
+          "out": "06:30 PM",
+          "location": "Office"
+        }
+      ]
+    }
+  ],
+  "regularizations": [
+    {
+      "id": "REG-501",
+      "date": "2026-06-10",
+      "reason": "Forgot to check out due to urgent client call",
+      "requestedCheckIn": "09:00 AM",
+      "requestedCheckOut": "06:30 PM",
+      "status": "Approved",
+      "appliedOn": "2026-06-11",
+      "employeeName": "Aman Vishwakarma"
+    },
+    {
+      "id": "REG-502",
+      "date": "2026-06-15",
+      "reason": "System was down during check-in",
+      "requestedCheckIn": "08:55 AM",
+      "requestedCheckOut": "06:00 PM",
+      "status": "Pending",
+      "appliedOn": "2026-06-16",
+      "employeeName": "Aman Vishwakarma"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "EXP-101",
+      "date": "2026-06-10",
+      "description": "Client Dinner",
+      "category": "Meals",
+      "amount": 120.5,
+      "status": "Approved"
+    },
+    {
+      "id": "EXP-102",
+      "date": "2026-06-12",
+      "description": "Flight to Tech Conference",
+      "category": "Travel",
+      "amount": 450,
+      "status": "Pending"
+    },
+    {
+      "id": "EXP-103",
+      "date": "2026-06-14",
+      "description": "New Office Monitor",
+      "category": "Equipment",
+      "amount": 299.99,
+      "status": "Rejected"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "type": "info",
+      "title": "Welcome to HRMS Portal",
+      "message": "Hello! Welcome to your new HRMS Dashboard. Explore your Profile, Attendance timings, Leave, and Finances.",
+      "time": "2 hours ago",
+      "isRead": false
+    },
+    {
+      "id": "2",
+      "type": "success",
+      "title": "Leave Request Approved",
+      "message": "Your casual leave request for 2026-07-01 to 2026-07-05 has been approved by Bob Johnson.",
+      "time": "1 day ago",
+      "isRead": false
+    },
+    {
+      "id": "3",
+      "type": "info",
+      "title": "Payroll Payslip Generated",
+      "message": "Your salary payslip for May 2026 is now available. Go to My Finance -> Payslips to download.",
+      "time": "3 days ago",
+      "isRead": true
+    }
+  ]
+}
