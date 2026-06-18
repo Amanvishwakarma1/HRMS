@@ -189,22 +189,50 @@ export const checkOut = async (req, res) => {
 
 export const getLiveTracking = async (req, res) => {
   try {
-    const dynamicQuery = `
-      SELECT DISTINCT ON (a.employee_id) 
-        e.id,
-        e.name,
-        e.role,
-        a.latitude, 
-        a.longitude, 
-        a.status,
-        a.geofence_verified,
-        a.check_in_time
-      FROM employees e
-      INNER JOIN attendance a ON e.id = a.employee_id
-      ORDER BY a.employee_id, a.check_in_time DESC;
-    `;
+    const role = req.user?.role?.toLowerCase();
+    const loggedInEmployeeId = req.user?.id ? Number(req.user.id) : null;
+
+    let dynamicQuery;
+    let replacements = {};
+
+    if (role === 'employee' && loggedInEmployeeId) {
+      dynamicQuery = `
+        SELECT DISTINCT ON (a.employee_id) 
+          e.id,
+          e.name,
+          e.role,
+          a.latitude, 
+          a.longitude, 
+          a.status,
+          a.geofence_verified,
+          a.check_in_time
+        FROM employees e
+        INNER JOIN attendance a ON e.id = a.employee_id
+        WHERE e.id = :empId
+        ORDER BY a.employee_id, a.check_in_time DESC;
+      `;
+      replacements = { empId: loggedInEmployeeId };
+    } else {
+      dynamicQuery = `
+        SELECT DISTINCT ON (a.employee_id) 
+          e.id,
+          e.name,
+          e.role,
+          a.latitude, 
+          a.longitude, 
+          a.status,
+          a.geofence_verified,
+          a.check_in_time
+        FROM employees e
+        INNER JOIN attendance a ON e.id = a.employee_id
+        ORDER BY a.employee_id, a.check_in_time DESC;
+      `;
+    }
     
-    const dbRecords = await sequelize.query(dynamicQuery, { type: sequelize.QueryTypes.SELECT });
+    const dbRecords = await sequelize.query(dynamicQuery, { 
+      replacements,
+      type: sequelize.QueryTypes.SELECT 
+    });
     return res.status(200).json({ success: true, data: dbRecords });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

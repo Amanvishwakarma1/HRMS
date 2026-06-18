@@ -8,10 +8,13 @@ const LiveTracking = () => {
   const [fleetLocations, setFleetLocations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const storedUser = JSON.parse(localStorage.getItem('currentUser')) || { username: 'User', role: 'employee' };
+  const isEmployee = storedUser.role === 'employee';
+
   useEffect(() => {
     const fetchFleet = () => {
       setLoading(true);
-      axios.get('http://localhost:5000/api/attendance/live-tracking')
+      axios.get('/api/attendance/live-tracking')
         .then(res => {
           if (res.data && res.data.success) {
             const mapped = res.data.data.map(emp => ({
@@ -44,12 +47,18 @@ const LiveTracking = () => {
       <div className="bg-slate-900 border border-slate-800 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div className="absolute top-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-blue-500 to-indigo-500"></div>
         <div>
-          <h2 className="text-sm font-bold tracking-wider uppercase text-slate-100">Live Fleet Telemetry Matrix</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Monitoring active workforce allocations globally.</p>
+          <h2 className="text-sm font-bold tracking-wider uppercase text-slate-100">
+            {isEmployee ? 'My Live Location' : 'Live Fleet Telemetry Matrix'}
+          </h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            {isEmployee ? 'Monitoring your personal location telemetry.' : 'Monitoring active workforce allocations globally.'}
+          </p>
         </div>
         <div className="shrink-0 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-full">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-          <span className="text-[10px] font-bold text-emerald-400 font-mono">Active Operators: {fleetLocations.length}</span>
+          <span className="text-[10px] font-bold text-emerald-400 font-mono">
+            {isEmployee ? 'Status: Active Tracking' : `Active Operators: ${fleetLocations.length}`}
+          </span>
         </div>
       </div>
 

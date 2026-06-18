@@ -10,7 +10,11 @@ import {
   LogOut, 
   Box,
   Calendar,
-  MapPin
+  MapPin,
+  Clock,
+  History,
+  ShieldAlert,
+  Map
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -26,18 +30,36 @@ const Sidebar = () => {
     navigate("/login");
   };
 
-  const menuItems = [
-    { name: "Home", path: "/", icon: <Home size={20} strokeWidth={1.5} /> },
-    { name: "Me", path: "/attendance", icon: <User size={20} strokeWidth={1.5} /> },
-    { name: "Leave", path: "/leave", icon: <Calendar size={20} strokeWidth={1.5} /> },
-    { name: "Inbox", path: "/notifications", icon: <Inbox size={20} strokeWidth={1.5} /> },
-    { name: "My Team", path: "/employees", icon: <Users size={20} strokeWidth={1.5} /> },
-    { name: "My Finance", path: "/payroll", icon: <Wallet size={20} strokeWidth={1.5} /> },
-  ];
+  let menuItems = [];
 
-  // Only HR and Admin see the Geofence Config page
-  if (storedUser.role === 'hr' || storedUser.role === 'admin') {
-    menuItems.push({ name: "Geofence", path: "/geofence", icon: <MapPin size={20} strokeWidth={1.5} /> });
+  if (storedUser.role === 'employee') {
+    menuItems = [
+      { name: "Dashboard", path: "/", icon: <Home size={20} strokeWidth={1.5} /> },
+      { name: "Attendance", path: "/attendance", icon: <Clock size={20} strokeWidth={1.5} /> },
+      { name: "Calendar", path: "/attendance/calendar", icon: <Calendar size={20} strokeWidth={1.5} /> },
+      { name: "Punch History", path: "/attendance/history", icon: <History size={20} strokeWidth={1.5} /> },
+      { name: "Shift & Schedule", path: "/attendance/shifts", icon: <Box size={20} strokeWidth={1.5} /> },
+      { name: "Overtime", path: "/attendance/overtime", icon: <ShieldAlert size={20} strokeWidth={1.5} /> },
+      { name: "Live Tracking", path: "/attendance/tracking", icon: <Map size={20} strokeWidth={1.5} /> },
+      { name: "Leave", path: "/leave", icon: <Calendar size={20} strokeWidth={1.5} /> },
+      { name: "Expenses", path: "/expenses", icon: <Wallet size={20} strokeWidth={1.5} /> },
+      { name: "Profile", path: `/employees/profile/${storedUser.id || 4}`, icon: <User size={20} strokeWidth={1.5} /> },
+    ];
+  } else {
+    menuItems = [
+      { name: "Home", path: "/", icon: <Home size={20} strokeWidth={1.5} /> },
+      { name: "Me", path: "/attendance", icon: <User size={20} strokeWidth={1.5} /> },
+      { name: "Leave", path: "/leave", icon: <Calendar size={20} strokeWidth={1.5} /> },
+      { name: "Inbox", path: "/notifications", icon: <Inbox size={20} strokeWidth={1.5} /> },
+      { name: "My Team", path: "/employees", icon: <Users size={20} strokeWidth={1.5} /> },
+      { name: "My Finance", path: "/payroll", icon: <Wallet size={20} strokeWidth={1.5} /> },
+      { name: "Expenses", path: "/expenses", icon: <Wallet size={20} strokeWidth={1.5} /> },
+    ];
+
+    // Only HR and Admin see the Geofence Config page
+    if (storedUser.role === 'hr' || storedUser.role === 'admin') {
+      menuItems.push({ name: "Geofence", path: "/geofence", icon: <MapPin size={20} strokeWidth={1.5} /> });
+    }
   }
 
   const isTabActive = (item) => {
@@ -45,7 +67,7 @@ const Sidebar = () => {
       return location.pathname === "/";
     }
     if (item.path === "/payroll") {
-      return location.pathname.startsWith("/payroll") || location.pathname.startsWith("/expenses");
+      return location.pathname.startsWith("/payroll");
     }
     return location.pathname.startsWith(item.path);
   };

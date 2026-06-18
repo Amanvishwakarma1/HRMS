@@ -2,11 +2,15 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Calendar, History, PenTool, ShieldAlert, Clock, MapPin, Map, Network } from 'lucide-react';
 
+
+
 const AttendanceLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const tabs = [
+  const storedUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+
+  let tabs = [
     { name: 'Dashboard', path: '/attendance', icon: <LayoutDashboard size={16} /> },
     { name: 'Calendar', path: '/attendance/calendar', icon: <Calendar size={16} /> },
     { name: 'Punches / History', path: '/attendance/history', icon: <History size={16} /> },
@@ -17,6 +21,10 @@ const AttendanceLayout = () => {
     { name: 'Live Tracking', path: '/attendance/tracking', icon: <Map size={16} /> },
     { name: 'Topology View', path: '/attendance/topology', icon: <Network size={16} /> },
   ];
+
+  if (storedUser.role === 'employee') {
+    tabs = tabs.filter(tab => tab.path !== '/attendance/geofence' && tab.path !== '/attendance/topology');
+  }
 
   const styles = {
     container: {

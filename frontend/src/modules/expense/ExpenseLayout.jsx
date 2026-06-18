@@ -12,7 +12,9 @@ const ExpenseLayout = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Consistent inline styling matching your Leave and Employee modules
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+  const showApprovals = ['admin', 'manager', 'hr', 'finance'].includes(currentUser.role?.toLowerCase());
+
   const styles = {
     container: {
       padding: '24px',
@@ -75,25 +77,48 @@ const ExpenseLayout = () => {
         </p>
         
         <div style={styles.buttonContainer}>
-          <button className={`sub-nav-btn ${isActive('/expenses') && !location.pathname.includes('/submit') && !location.pathname.includes('/status') && !location.pathname.includes('/approvals') && !location.pathname.includes('/policy') ? 'active' : ''}`} onClick={() => navigate('/expenses')}>
-            Expense History
+          <button 
+            className={`sub-nav-btn ${isActive('/expenses') && !location.pathname.includes('/submit') && !location.pathname.includes('/status') && !location.pathname.includes('/approvals') && !location.pathname.includes('/reports') && !location.pathname.includes('/policy') ? 'active' : ''}`} 
+            onClick={() => navigate('/expenses')}
+          >
+            My Expenses
           </button>
-          <button className={`sub-nav-btn ${isActive('/expenses/submit') ? 'active' : ''}`} onClick={() => navigate('/expenses/submit')}>
-            Submit Expense
+          <button 
+            className={`sub-nav-btn ${isActive('/expenses/submit') ? 'active' : ''}`} 
+            onClick={() => navigate('/expenses/submit')}
+          >
+            Create Expense
           </button>
-          <button className={`sub-nav-btn ${isActive('/expenses/status') ? 'active' : ''}`} onClick={() => navigate('/expenses/status')}>
-            Reimbursement Status
+          <button 
+            className={`sub-nav-btn ${isActive('/expenses/status') ? 'active' : ''}`} 
+            onClick={() => navigate('/expenses/status')}
+          >
+            Reimbursements
           </button>
-          <button className={`sub-nav-btn ${isActive('/expenses/approvals') ? 'active' : ''}`} onClick={() => navigate('/expenses/approvals')}>
-            Approvals
+          <button 
+            className={`sub-nav-btn ${isActive('/expenses/reports') ? 'active' : ''}`} 
+            onClick={() => navigate('/expenses/reports')}
+          >
+            Reports & Analytics
           </button>
-          <button className={`sub-nav-btn ${isActive('/expenses/policy') ? 'active' : ''}`} onClick={() => navigate('/expenses/policy')}>
+          {showApprovals && (
+            <button 
+              className={`sub-nav-btn ${isActive('/expenses/approvals') ? 'active' : ''}`} 
+              onClick={() => navigate('/expenses/approvals')}
+            >
+              Approvals
+            </button>
+          )}
+          <button 
+            className={`sub-nav-btn ${isActive('/expenses/policy') ? 'active' : ''}`} 
+            onClick={() => navigate('/expenses/policy')}
+          >
             Policy
           </button>
         </div>
       </div>
 
-      {/* Dynamic Content: This is where your Expense child pages will appear */}
+      {/* Dynamic Content */}
       <div>
         <Outlet />
       </div>

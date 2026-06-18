@@ -7,15 +7,26 @@ export const AttendanceCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 17)); // June 2026
   const [hoveredDay, setHoveredDay] = useState(null);
 
+  const storedUser = JSON.parse(localStorage.getItem('currentUser')) || { username: 'User', role: 'employee' };
+  const isEmployee = storedUser.role === 'employee';
+
   useEffect(() => {
     const fetchLogs = async () => {
-      const res = await attendanceService.getLogs();
-      if (res.success) {
-        setLogs(res.data);
+      let data = [];
+      if (isEmployee) {
+        // Query employee's own PostgreSQL history
+        const activeId = Number(storedUser.id || 4);
+        data = await attendanceService.getAttendanceHistory(activeId);
+      } else {
+        const res = await attendanceService.getLogs();
+        if (res.success) {
+          data = res.data;
+        }
       }
+      setLogs(data);
     };
     fetchLogs();
-  }, []);
+  }, [isEmployee, storedUser.id]);
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -55,11 +66,19 @@ export const AttendanceCalendar = () => {
       return { status: 'Week Off', label: 'Week Off', color: '#94a3b8', bg: '#f1f5f9', icon: 'WO' };
     }
 
+    const formatTime = (isoStr) => {
+      if (!isoStr) return '';
+      const d = new Date(isoStr);
+      return isNaN(d.getTime()) ? isoStr : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    };
+
     if (log) {
-      if (log.status === 'Present') return { status: 'Present', checkIn: log.checkIn, checkOut: log.checkOut, color: '#22c55e', bg: '#f0fdf4', icon: 'P' };
-      if (log.status === 'Late') return { status: 'Late', checkIn: log.checkIn, checkOut: log.checkOut, color: '#eab308', bg: '#fef9c3', icon: 'L' };
-      if (log.status === 'Half Day') return { status: 'Half Day', checkIn: log.checkIn, checkOut: log.checkOut, color: '#f97316', bg: '#ffeff0', icon: 'HD' };
-      if (log.status === 'On Leave') return { status: 'On Leave', color: '#a855f7', bg: '#faf5ff', icon: 'OL' };
+      const formattedIn = formatTime(log.checkIn);
+      const formattedOut = formatTime(log.checkOut);
+      if (log.status === 'Present') return { status: 'Present', checkIn: formattedIn, checkOut: formattedOut, color: '#22c55e', bg: '#f0fdf4', icon: 'P' };
+      if (log.status === 'Late') return { status: 'Late', checkIn: formattedIn, checkOut: formattedOut, color: '#a855f7', bg: '#faf5ff', icon: 'L' };
+      if (log.status === 'Half Day') return { status: 'Half Day', checkIn: formattedIn, checkOut: formattedOut, color: '#f97316', bg: '#fff7ed', icon: 'HD' };
+      if (log.status === 'On Leave') return { status: 'On Leave', color: '#eab308', bg: '#fef9c3', icon: 'OL' };
       if (log.status === 'Absent') return { status: 'Absent', color: '#ef4444', bg: '#fef2f2', icon: 'A' };
     }
 
@@ -276,13 +295,13 @@ export const AttendanceCalendar = () => {
           <div style={styles.legendDot('#f0fdf4')} /> Present
         </div>
         <div style={styles.legendItem}>
-          <div style={styles.legendDot('#fef9c3')} /> Late
+          <div style={styles.legendDot('#faf5ff')} /> Late
         </div>
         <div style={styles.legendItem}>
-          <div style={styles.legendDot('#ffeff0')} /> Half Day
+          <div style={styles.legendDot('#fff7ed')} /> Half Day
         </div>
         <div style={styles.legendItem}>
-          <div style={styles.legendDot('#faf5ff')} /> On Leave
+          <div style={styles.legendDot('#fef9c3')} /> On Leave
         </div>
         <div style={styles.legendItem}>
           <div style={styles.legendDot('#fef2f2')} /> Absent

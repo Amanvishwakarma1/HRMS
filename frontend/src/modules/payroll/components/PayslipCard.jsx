@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PayslipCard = ({ month, netPay, status }) => {
+const PayslipCard = ({ month, netPay, status, onDownload }) => {
   const styles = {
     card: { padding: '16px', border: '1px solid #e5e7eb', borderRadius: '8px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' },
     details: { display: 'flex', flexDirection: 'column', gap: '4px' },
@@ -16,7 +16,7 @@ const PayslipCard = ({ month, netPay, status }) => {
         <p style={styles.pay}>Net Pay: ₹ {netPay || "0.00"}</p>
         <small style={{ color: status === 'Paid' ? '#10b981' : '#f59e0b' }}>Status: {status || "Pending"}</small>
       </div>
-      <button style={styles.button}>Download PDF</button>
+      <button style={styles.button} onClick={onDownload} aria-label="View Payslip PDF">View Payslip</button>
     </div>
   );
 };

@@ -31,15 +31,16 @@ const Login = () => {
     const res = await authService.login(credentials.username, credentials.password);
     if (res.success) {
       // Save user session
-      localStorage.setItem('currentUser', JSON.stringify({ username: res.username, role: res.role }));
+      localStorage.setItem('currentUser', JSON.stringify({ 
+        username: res.username, 
+        role: res.role, 
+        token: res.token, 
+        id: res.id 
+      }));
       
-      // Auto-configure active employee ID context for tracking based on role
-      let defaultId = '2'; // default HR Priya Sharma
-      if (res.role === 'admin') defaultId = '1';
-      else if (res.role === 'hr') defaultId = '2';
-      else if (res.role === 'manager') defaultId = '3';
-      else if (res.role === 'employee') defaultId = '4';
-      localStorage.setItem('active_employee_id', defaultId);
+      // Auto-configure active employee ID context for tracking
+      const activeId = res.id ? String(res.id) : '4';
+      localStorage.setItem('active_employee_id', activeId);
 
       navigate('/'); // Route to dashboard
     } else {

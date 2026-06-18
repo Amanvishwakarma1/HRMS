@@ -30,6 +30,7 @@ import ExpenseHistory from "./modules/expense/pages/ExpenseHistory";
 import SubmitExpense from "./modules/expense/pages/SubmitExpense";
 import ReimbursementStatus from "./modules/expense/pages/ReimbursementStatus";
 import ExpenseApproval from "./modules/expense/pages/ExpenseApproval";
+import ExpenseReports from "./modules/expense/pages/ExpenseReports";
 import ExpensePolicy from "./modules/expense/pages/ExpensePolicy";
 
 // Payroll Module
@@ -129,6 +130,7 @@ function App() {
             <Route path="submit" element={<SubmitExpense />} />
             <Route path="status" element={<ReimbursementStatus />} />
             <Route path="approvals" element={<ExpenseApproval />} />
+            <Route path="reports" element={<ExpenseReports />} />
             <Route path="policy" element={<ExpensePolicy />} />
           </Route>
           

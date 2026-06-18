@@ -12,7 +12,7 @@ const defaultGeofence = {
 export const geofenceService = {
   fetchOfficeLocation: async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/geofence');
+      const res = await axios.get('/api/geofence');
       if (res.data) {
         return {
           officeName: res.data.officeName || res.data.office_name,
@@ -36,7 +36,7 @@ export const geofenceService = {
         longitude: newConfig.lng,
         radiusMeters: newConfig.radius
       };
-      const res = await axios.post('http://localhost:5000/api/geofence/update', payload);
+      const res = await axios.post('/api/geofence/update', payload);
       if (res.data) {
         const mapped = {
           officeName: res.data.officeName || res.data.office_name,

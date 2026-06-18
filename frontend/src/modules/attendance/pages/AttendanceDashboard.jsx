@@ -73,17 +73,23 @@ const ChangeMapCenter = ({ center }) => {
 export const AttendanceDashboard = () => {
   const { todayRecord, executeCheckIn, executeCheckOut, clockIn, clockOut, loading, officeConfig } = useAttendance();
   
+  const storedUser = JSON.parse(localStorage.getItem("currentUser")) || { username: "User", role: "employee", id: 4 };
+  const isEmployee = storedUser.role === 'employee';
+
   // Dashboard Sub-Tabs & View Modes
-  const [subTab, setSubTab] = useState('summary'); // 'summary' | 'clock-io'
+  const [subTab, setSubTab] = useState(isEmployee ? 'clock-io' : 'summary'); // 'summary' | 'clock-io'
   const [viewMode, setViewMode] = useState('summary'); // 'summary' | 'employee-list' | 'employee-tracking'
   const [selectedEmployeeForTracking, setSelectedEmployeeForTracking] = useState(null);
   
   // Database State Variables
   const [employees, setEmployees] = useState([]);
-  const [currentEmployeeId, setCurrentEmployeeId] = useState(localStorage.getItem('active_employee_id') || '2');
+  const [currentEmployeeId, setCurrentEmployeeId] = useState(
+    isEmployee ? String(storedUser.id) : (localStorage.getItem('active_employee_id') || '2')
+  );
   const [todayAttendanceRecords, setTodayAttendanceRecords] = useState([]);
   const [recentLogs, setRecentLogs] = useState([]);
-  
+  const [employeeProfile, setEmployeeProfile] = useState(null);
+
   // Geolocation & Action States
   const [userLoc, setUserLoc] = useState(null);
   const [currentDistance, setCurrentDistance] = useState(0);
@@ -142,44 +148,70 @@ export const AttendanceDashboard = () => {
     ];
   };
 
-  // 1. Fetch employee list for context dropdown
+  // 1. Fetch employee list or single profile
   useEffect(() => {
-    axios.get('/api/attendance/employees')
-      .then(res => {
-        if (res.data && res.data.success) {
-          setEmployees(res.data.data);
-          const list = res.data.data;
-          if (list.length > 0 && !list.some(e => String(e.id) === String(currentEmployeeId))) {
-            const firstId = String(list[0].id);
-            setCurrentEmployeeId(firstId);
-            localStorage.setItem('active_employee_id', firstId);
+    if (isEmployee) {
+      axios.get(`/api/employees/EMP-00${storedUser.id}`)
+        .then(res => {
+          if (res.data && res.data.success) {
+            setEmployeeProfile(res.data.data);
+            setEmployees([res.data.data]);
           }
-        }
-      })
-      .catch(err => console.error("Error loading employees:", err));
-  }, []);
+        })
+        .catch(err => console.error("Error loading employee profile:", err));
+    } else {
+      axios.get('/api/attendance/employees')
+        .then(res => {
+          if (res.data && res.data.success) {
+            setEmployees(res.data.data);
+            const list = res.data.data;
+            if (list.length > 0 && !list.some(e => String(e.id) === String(currentEmployeeId))) {
+              const firstId = String(list[0].id);
+              setCurrentEmployeeId(firstId);
+              localStorage.setItem('active_employee_id', firstId);
+            }
+          }
+        })
+        .catch(err => console.error("Error loading employees:", err));
+    }
+  }, [isEmployee]);
 
-  // 2. Fetch today's records for all employees to calculate stats
+  // 2. Fetch today's records for all employees or single employee to calculate stats
   const fetchTodayStats = () => {
-    axios.get('http://localhost:5000/api/attendance/all')
-      .then(res => {
-        if (res.data && res.data.success) {
-          const todayStr = new Date().toISOString().split('T')[0];
-          const filtered = res.data.data.filter(r => {
-            const recordDate = new Date(r.check_in_time).toISOString().split('T')[0];
-            return recordDate === todayStr;
-          });
-          setTodayAttendanceRecords(filtered);
-        }
-      })
-      .catch(err => console.error("Error loading today logs:", err));
+    if (isEmployee) {
+      axios.get(`/api/attendance/history/${storedUser.id}`)
+        .then(res => {
+          if (res.data && res.data.success) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const filtered = res.data.data.filter(r => {
+              const recordDate = new Date(r.check_in_time).toISOString().split('T')[0];
+              return recordDate === todayStr;
+            });
+            setTodayAttendanceRecords(filtered);
+          }
+        })
+        .catch(err => console.error("Error loading employee today logs:", err));
+    } else {
+      axios.get('/api/attendance/all')
+        .then(res => {
+          if (res.data && res.data.success) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const filtered = res.data.data.filter(r => {
+              const recordDate = new Date(r.check_in_time).toISOString().split('T')[0];
+              return recordDate === todayStr;
+            });
+            setTodayAttendanceRecords(filtered);
+          }
+        })
+        .catch(err => console.error("Error loading today logs:", err));
+    }
   };
 
   useEffect(() => {
     fetchTodayStats();
     window.addEventListener('attendance_update', fetchTodayStats);
     return () => window.removeEventListener('attendance_update', fetchTodayStats);
-  }, []);
+  }, [isEmployee]);
 
   // 3. Fetch recent logs & history records for selected employee
   useEffect(() => {
@@ -358,6 +390,28 @@ export const AttendanceDashboard = () => {
   const remoteClockInCount = todayAttendanceRecords.filter(r => r.geofence_verified === false).length;
   const holidayCount = 0;
 
+  // Calculate employee-specific personal stats from recentLogs
+  const personalLogs = recentLogs || [];
+  const empPresentDays = personalLogs.filter(log => log.status === 'Present' || log.status === 'Late').length;
+  const empAbsentDays = personalLogs.filter(log => log.status === 'Absent').length;
+  const empLeaveDays = personalLogs.filter(log => log.status === 'On Leave' || log.status === 'Leave').length;
+  const empLateArrivals = personalLogs.filter(log => log.status === 'Late').length;
+
+  const empTotalWorkingHours = personalLogs.reduce((sum, log) => {
+    return sum + parseFloat(log.activeHours || 0);
+  }, 0).toFixed(1);
+
+  const empOvertimeHours = personalLogs.reduce((sum, log) => {
+    const hours = parseFloat(log.activeHours || 0);
+    return sum + (hours > 8.0 ? (hours - 8.0) : 0.0);
+  }, 0).toFixed(1);
+
+  // Today's details
+  const todayStatus = todayRecord?.status || 'Absent';
+  const todayPunchIn = todayRecord?.checkInStr || '--:--:--';
+  const todayPunchOut = todayRecord?.checkOutStr || '--:--:--';
+  const todayWorkingHours = isCheckedIn ? formatTimer(shiftSeconds) : (todayRecord?.accumulatedTime ? ((todayRecord.accumulatedTime / 3600).toFixed(2) + " hrs") : '--:--:--');
+
   if (loading) {
     return (
       <div className="min-h-[500px] flex flex-col justify-center items-center">
@@ -375,23 +429,226 @@ export const AttendanceDashboard = () => {
       
       {/* ================= VIEWPORT SUMMARY DASHBOARD MODE ================= */}
       {viewMode === 'summary' && (
-        <div className="space-y-6 animate-fadeIn">
-          
-          {/* Sub-navigation bar inside Dashboard */}
-          <div className="flex gap-4 border-b border-slate-200 pb-px">
-            <button 
-              onClick={() => setSubTab('summary')}
-              className={`pb-3 text-sm font-bold border-b-2 px-1 transition-all ${subTab === 'summary' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-            >
-              Attendance Summary
-            </button>
-            <button 
-              onClick={() => setSubTab('clock-io')}
-              className={`pb-3 text-sm font-bold border-b-2 px-1 transition-all ${subTab === 'clock-io' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-            >
-              My Clock In/Out
-            </button>
+        isEmployee ? (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Employee Self-Service Dashboard */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-800 mb-4">Employee Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Employee Name</span>
+                  <span className="font-bold text-slate-800">{employeeProfile?.name || 'Aman Vishwakarma'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Employee ID</span>
+                  <span className="font-mono font-bold text-slate-800">{employeeProfile?.id || 'EMP-004'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Designation</span>
+                  <span className="font-bold text-slate-800">{employeeProfile?.designation || 'Fullstack Developer'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Department</span>
+                  <span className="font-bold text-slate-800">{employeeProfile?.department || 'Engineering'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Reporting Manager</span>
+                  <span className="font-bold text-slate-800">Charlie Davis (Project Manager)</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">Current Shift</span>
+                  <span className="font-bold text-slate-800">General Shift (09:00 AM - 06:30 PM)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Today's Punch & Clock Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Today's Stats Card */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-base font-bold text-slate-700">Today's Attendance Status</h3>
+                
+                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Status</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      todayStatus === 'Present' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                      todayStatus === 'Late' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 
+                      'bg-rose-50 text-rose-700 border border-rose-100'
+                    }`}>
+                      {todayStatus}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Today's Work Hours</span>
+                    <span className="font-mono font-bold text-slate-800 text-lg">{todayWorkingHours}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">First In Time</span>
+                    <span className="font-mono font-bold text-slate-800">{todayPunchIn}</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Last Out Time</span>
+                    <span className="font-mono font-bold text-slate-800">{todayPunchOut}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Clock In / Out Controller Component (Relocated clock-io tab for employees) */}
+              <div className="lg:col-span-2">
+                <div className="flex flex-col sm:flex-row gap-6 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm h-full justify-between items-stretch">
+                  
+                  {/* Left inner panel */}
+                  <div className="flex-1 flex flex-col justify-between gap-4">
+                    <div 
+                      style={{ backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}
+                      className="border border-slate-200 rounded-xl p-5 text-center relative overflow-hidden shadow-inner flex-1 flex flex-col justify-center"
+                    >
+                      <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Today's Total Active Time</span>
+                      <h2 className={`text-4xl font-mono font-bold mt-2 ${isCheckedIn ? 'text-emerald-600 drop-shadow-[0_0_12px_rgba(16,185,129,0.25)]' : 'text-slate-800'}`}>
+                        {formatTimer(shiftSeconds)}
+                      </h2>
+                    </div>
+
+                    <div className="text-xs space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <div className="flex justify-between"><span className="text-slate-500">Perimeter Limit:</span> <span className="font-bold text-slate-700">{officeConfig.radius}m</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Distance from Office:</span> <span className={`font-bold ${isInsideGeofence ? 'text-emerald-600' : 'text-rose-600'}`}>{Math.round(currentDistance)}m ({isInsideGeofence ? 'Inside' : 'Outside'})</span></div>
+                    </div>
+                  </div>
+
+                  {/* Right inner panel */}
+                  <div className="flex-1 flex flex-col justify-between gap-4">
+                    {isCheckedIn ? (
+                      <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl text-xs font-semibold flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500 text-white rounded-full"><ShieldCheck size={16} /></div>
+                        <div>
+                          <h4 className="font-bold text-[12px] text-emerald-950">Active Punch Session</h4>
+                          <p className="text-emerald-700/80 mt-0.5">Your attendance is verified present inside boundaries.</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 border border-slate-200 text-slate-800 p-4 rounded-xl text-xs font-semibold flex items-center gap-3">
+                        <div className="p-2 bg-slate-500 text-white rounded-full"><Clock size={16} /></div>
+                        <div>
+                          <h4 className="font-bold text-[12px] text-slate-900">Secure Entry Console</h4>
+                          <p className="text-slate-500 mt-0.5">Please clock-in to record shift timings.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs font-medium flex items-center gap-2">
+                        <ShieldAlert size={14} />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {!isCheckedIn ? (
+                        <button
+                          onClick={handleCheckInSequence}
+                          disabled={actionLoading}
+                          className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs p-3.5 rounded-xl transition-all shadow-md cursor-pointer"
+                        >
+                          {actionLoading ? "Processing check-in..." : "Clock In / Check-In"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleCheckOutSequence}
+                          disabled={actionLoading}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs p-3.5 rounded-xl transition-all shadow-md cursor-pointer"
+                        >
+                          {actionLoading ? "Processing check-out..." : "Clock Out / Check-Out"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+            {/* Dashboard Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+              
+              {/* Present Days */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Present Days</span>
+                <h3 className="text-2xl font-extrabold text-slate-900 mt-2">{empPresentDays} Days</h3>
+              </div>
+
+              {/* Absent Days */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Absent Days</span>
+                <h3 className="text-2xl font-extrabold text-rose-600 mt-2">{empAbsentDays} Days</h3>
+              </div>
+
+              {/* Leave Days */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Leave Days</span>
+                <h3 className="text-2xl font-extrabold text-amber-500 mt-2">{empLeaveDays} Days</h3>
+              </div>
+
+              {/* Overtime Hours */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Overtime Hours</span>
+                <h3 className="text-2xl font-extrabold text-blue-600 mt-2">{empOvertimeHours} Hrs</h3>
+              </div>
+
+              {/* Total Working Hours */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Working Hours</span>
+                <h3 className="text-2xl font-extrabold text-emerald-600 mt-2">{empTotalWorkingHours} Hrs</h3>
+              </div>
+
+            </div>
+
+            {/* Monthly Attendance Summary Metrics */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-base font-bold text-slate-700 mb-4">Monthly Attendance Summary</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Monthly Present Days</span>
+                  <span className="text-lg font-bold text-slate-800 mt-1 block">{empPresentDays}</span>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Monthly Absent Days</span>
+                  <span className="text-lg font-bold text-slate-800 mt-1 block">{empAbsentDays}</span>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Monthly Leave Days</span>
+                  <span className="text-lg font-bold text-slate-800 mt-1 block">{empLeaveDays}</span>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Monthly Late Arrivals</span>
+                  <span className="text-lg font-bold text-slate-800 mt-1 block">{empLateArrivals}</span>
+                </div>
+              </div>
+            </div>
+
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Sub-navigation bar inside Dashboard */}
+            <div className="flex gap-4 border-b border-slate-200 pb-px">
+              <button 
+                onClick={() => setSubTab('summary')}
+                className={`pb-3 text-sm font-bold border-b-2 px-1 transition-all ${subTab === 'summary' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+              >
+                Attendance Summary
+              </button>
+              <button 
+                onClick={() => setSubTab('clock-io')}
+                className={`pb-3 text-sm font-bold border-b-2 px-1 transition-all ${subTab === 'clock-io' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+              >
+                My Clock In/Out
+              </button>
+            </div>
 
           {/* Render Sub Tab: Summary Stats */}
           {subTab === 'summary' && (
@@ -639,7 +896,8 @@ export const AttendanceDashboard = () => {
             </div>
           )}
 
-        </div>
+          </div>
+        )
       )}
 
 

@@ -1,8 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldAlert, TrendingUp, Info } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { attendanceService } from '../services/attendanceService';
 
 const Overtime = () => {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const storedUser = JSON.parse(localStorage.getItem('currentUser')) || { username: 'User', role: 'employee' };
+  const isEmployee = storedUser.role === 'employee';
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      if (isEmployee) {
+        const activeId = Number(storedUser.id || 4);
+        const history = await attendanceService.getAttendanceHistory(activeId);
+        setLogs(history);
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, [isEmployee, storedUser.id]);
+
   const styles = {
     card: {
       background: '#ffffff',
@@ -60,31 +80,85 @@ const Overtime = () => {
     }
   };
 
-  const otHistory = [
+  const otHistoryMock = [
     { date: '2026-06-06', type: 'Weekend Work (Saturday)', hours: 4.5, multiplier: '1.5x', status: 'Approved' },
     { date: '2026-06-12', type: 'Late Checkout (Weekday)', hours: 2.0, multiplier: '1.25x', status: 'Approved' },
     { date: '2026-06-13', type: 'Weekend Work (Saturday)', hours: 5.0, multiplier: '1.5x', status: 'Approved' }
   ];
 
-  const chartData = [
-    { week: 'Week 1', hours: 0 },
-    { week: 'Week 2', hours: 4.5 },
-    { week: 'Week 3', hours: 6.5 },
-    { week: 'Week 4', hours: 11.5 }
-  ];
+  let calculatedOtHistory = [];
+  let totalOtHours = 0;
+  let weekHours = { 'Week 1': 0, 'Week 2': 0, 'Week 3': 0, 'Week 4': 0, 'Week 5': 0 };
+
+  if (isEmployee) {
+    logs.forEach(log => {
+      const checkInTime = log.checkIn ? new Date(log.checkIn) : null;
+      const checkOutTime = log.checkOut ? new Date(log.checkOut) : null;
+      if (checkInTime && checkOutTime) {
+        const diffMs = checkOutTime - checkInTime;
+        const activeHours = Math.max(0, diffMs / (1000 * 60 * 60));
+        if (activeHours > 8.0) {
+          const otHours = parseFloat((activeHours - 8.0).toFixed(2));
+          totalOtHours += otHours;
+
+          const dateObj = new Date(log.date);
+          const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+          const isWeekend = dayName === 'Saturday' || dayName === 'Sunday';
+
+          calculatedOtHistory.push({
+            date: log.date,
+            type: isWeekend ? `Weekend Work (${dayName})` : 'Late Checkout (Weekday)',
+            hours: otHours,
+            multiplier: isWeekend ? '1.5x' : '1.25x',
+            status: 'Approved'
+          });
+
+          const dayOfMonth = dateObj.getDate();
+          let weekKey = 'Week 1';
+          if (dayOfMonth <= 7) weekKey = 'Week 1';
+          else if (dayOfMonth <= 14) weekKey = 'Week 2';
+          else if (dayOfMonth <= 21) weekKey = 'Week 3';
+          else if (dayOfMonth <= 28) weekKey = 'Week 4';
+          else weekKey = 'Week 5';
+
+          weekHours[weekKey] += otHours;
+        }
+      }
+    });
+
+    calculatedOtHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+  } else {
+    calculatedOtHistory = otHistoryMock;
+    totalOtHours = 11.5;
+  }
+
+  const chartData = isEmployee 
+    ? Object.keys(weekHours).map(w => ({ week: w, hours: parseFloat(weekHours[w].toFixed(1)) }))
+    : [
+        { week: 'Week 1', hours: 0 },
+        { week: 'Week 2', hours: 4.5 },
+        { week: 'Week 3', hours: 6.5 },
+        { week: 'Week 4', hours: 11.5 }
+      ];
+
+  if (isEmployee && loading) {
+    return <p style={{ color: '#64748b', padding: '24px' }}>Loading overtime details...</p>;
+  }
 
   return (
     <div>
       <div style={styles.grid}>
         <div style={styles.metricBox}>
           <div style={{ color: '#64748b', fontSize: '13px' }}>Accumulated Overtime (June)</div>
-          <div style={styles.metricValue}>11.5 Hours</div>
-          <div style={{ fontSize: '11px', color: '#22c55e' }}>+2.5 hrs from last month</div>
+          <div style={styles.metricValue}>{totalOtHours.toFixed(1)} Hours</div>
+          <div style={{ fontSize: '11px', color: '#22c55e' }}>
+            {isEmployee ? 'Calculated from actual history logs' : '+2.5 hrs from last month'}
+          </div>
         </div>
         <div style={styles.metricBox}>
           <div style={{ color: '#64748b', fontSize: '13px' }}>OT Multiplier Rate</div>
           <div style={{ ...styles.metricValue, color: '#10b981' }}>1.5x / Hour</div>
-          <div style={{ fontSize: '11px', color: '#64748b' }}>For Saturdays & Holidays</div>
+          <div style={{ fontSize: '11px', color: '#64748b' }}>For Saturdays & Sundays</div>
         </div>
         <div style={styles.metricBox}>
           <div style={{ color: '#64748b', fontSize: '13px' }}>Pending Approvals</div>
@@ -130,19 +204,27 @@ const Overtime = () => {
               </tr>
             </thead>
             <tbody>
-              {otHistory.map((ot) => (
-                <tr key={ot.date}>
-                  <td style={styles.td}><strong>{ot.date}</strong></td>
-                  <td style={styles.td}>{ot.type}</td>
-                  <td style={styles.td}><strong>{ot.hours} hrs</strong></td>
-                  <td style={styles.td}>{ot.multiplier}</td>
-                  <td style={styles.td}>
-                    <span style={{ padding: '3px 8px', borderRadius: '4px', backgroundColor: '#d1fae5', color: '#065f46', fontSize: '11px', fontWeight: 'bold' }}>
-                      {ot.status}
-                    </span>
+              {calculatedOtHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '24px' }}>
+                    No overtime hours logged for this month.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                calculatedOtHistory.map((ot) => (
+                  <tr key={ot.date}>
+                    <td style={styles.td}><strong>{ot.date}</strong></td>
+                    <td style={styles.td}>{ot.type}</td>
+                    <td style={styles.td}><strong>{ot.hours} hrs</strong></td>
+                    <td style={styles.td}>{ot.multiplier}</td>
+                    <td style={styles.td}>
+                      <span style={{ padding: '3px 8px', borderRadius: '4px', backgroundColor: '#d1fae5', color: '#065f46', fontSize: '11px', fontWeight: 'bold' }}>
+                        {ot.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

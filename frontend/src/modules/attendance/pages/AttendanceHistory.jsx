@@ -99,43 +99,35 @@ export const AttendanceHistory = () => {
           setLogs(mappedLogs);
         }
       } else {
-        // Fallback for regular employees
-        const activeId = localStorage.getItem('active_employee_id') || '4';
-        
-        if (activeId && !isNaN(activeId)) {
-          const history = await attendanceService.getAttendanceHistory(Number(activeId));
-          const mappedLogs = history.map(h => {
-            const checkInTime = h.checkIn ? new Date(h.checkIn) : null;
-            const checkOutTime = h.checkOut ? new Date(h.checkOut) : null;
-            
-            let activeHours = '0.0';
-            if (checkInTime && checkOutTime) {
-              const diffMs = checkOutTime - checkInTime;
-              activeHours = (Math.max(0, diffMs / (1000 * 60 * 60))).toFixed(1);
-            }
-            
-            return {
-              id: h.id,
-              date: h.date,
-              status: h.status || 'Present',
-              checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
-              checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
-              activeHours,
-              breakHours: '0.0',
-              punches: h.checkIn ? [{
-                in: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
-                out: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
-                location: 'Office'
-              }] : []
-            };
-          });
-          setLogs(mappedLogs);
-        } else {
-          const res = await attendanceService.getLogs();
-          if (res.success) {
-            setLogs(res.data);
+        // Secure query for regular employee using logged-in session ID
+        const activeId = Number(storedUser.id || 4);
+        const history = await attendanceService.getAttendanceHistory(activeId);
+        const mappedLogs = history.map(h => {
+          const checkInTime = h.checkIn ? new Date(h.checkIn) : null;
+          const checkOutTime = h.checkOut ? new Date(h.checkOut) : null;
+          
+          let activeHours = '0.0';
+          if (checkInTime && checkOutTime) {
+            const diffMs = checkOutTime - checkInTime;
+            activeHours = (Math.max(0, diffMs / (1000 * 60 * 60))).toFixed(1);
           }
-        }
+          
+          return {
+            id: h.id,
+            date: h.date,
+            status: h.status || 'Present',
+            checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+            checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+            activeHours,
+            breakHours: '0.0',
+            punches: h.checkIn ? [{
+              in: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              out: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              location: 'Office'
+            }] : []
+          };
+        });
+        setLogs(mappedLogs);
       }
       setIsLoading(false);
     };

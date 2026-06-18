@@ -39,7 +39,7 @@ export const attendanceService = {
     if (!isNaN(activeEmpId)) {
       try {
         const employeeId = Number(activeEmpId);
-        const res = await axios.get(`http://localhost:5000/api/attendance/history/${employeeId}`);
+        const res = await axios.get(`/api/attendance/history/${employeeId}`);
         if (res.data && res.data.success) {
           const todayStr = new Date().toISOString().split('T')[0];
           const todayRecords = res.data.data.filter(r => {
@@ -205,7 +205,7 @@ export const attendanceService = {
       latitude: location.lat,
       longitude: location.lng
     };
-    const res = await axios.post('http://localhost:5000/api/attendance/checkin', payload);
+    const res = await axios.post('/api/attendance/checkin', payload);
     return res.data;
   },
 
@@ -218,14 +218,14 @@ export const attendanceService = {
       accumulatedOutsideMinutes: 0,
       bypassShiftCheck: true
     };
-    const res = await axios.post('http://localhost:5000/api/attendance/checkout', payload);
+    const res = await axios.post('/api/attendance/checkout', payload);
     return res.data;
   },
 
   getAttendanceHistory: async (empId) => {
     const employeeId = empId || Number(localStorage.getItem('active_employee_id') || '2');
     try {
-      const res = await axios.get(`http://localhost:5000/api/attendance/history/${employeeId}`);
+      const res = await axios.get(`/api/attendance/history/${employeeId}`);
       if (res.data && res.data.success) {
         return res.data.data.map(r => ({
           id: r.id,
@@ -245,7 +245,7 @@ export const attendanceService = {
 
   getAllAttendance: async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/attendance/all');
+      const res = await axios.get('/api/attendance/all');
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -257,7 +257,7 @@ export const attendanceService = {
 
   getEmployees: async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/attendance/employees');
+      const res = await axios.get('/api/attendance/employees');
       if (res.data && res.data.success) {
         return res.data.data;
       }

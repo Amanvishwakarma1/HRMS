@@ -16,14 +16,58 @@ import { Attendance } from './models/Attendance.js';
 import { Employee } from './models/Employee.js';
 import { Location } from './models/Location.js';
 
+// New Payroll Models
+import { SalaryStructure, SalaryStructureHistory } from './models/SalaryStructure.js';
+import { PayrollRun } from './models/PayrollRun.js';
+import { PayrollRecord } from './models/PayrollRecord.js';
+import { Bonus } from './models/Bonus.js';
+import { Reimbursement } from './models/Reimbursement.js';
+import { TaxDeclaration } from './models/TaxDeclaration.js';
+import { AuditLog } from './models/AuditLog.js';
+
+// New Expense Models
+import { ExpenseCategory } from './models/ExpenseCategory.js';
+import { Expense } from './models/Expense.js';
+import { ExpenseReceipt } from './models/ExpenseReceipt.js';
+import { ExpenseApproval } from './models/ExpenseApproval.js';
+import { ExpenseComment } from './models/ExpenseComment.js';
+
+// Expense Router & Initializer
+import expenseRouter from './routes/expenseRoutes.js';
+import { initializeExpenseDatabase } from './config/initDb.js';
+import path from 'path';
+
+// New Payroll Controllers
+import { 
+  createSalaryStructure, getSalaryStructures, getSalaryStructure, 
+  updateSalaryStructure, deleteSalaryStructure, cloneSalaryStructure, getRevisionHistory 
+} from './controllers/salaryStructureController.js';
+import { 
+  createBonus, bulkAssignBonus, getBonuses, approveBonus, deleteBonus 
+} from './controllers/bonusController.js';
+import { 
+  createReimbursement, getReimbursements, approveReimbursement, deleteReimbursement 
+} from './controllers/reimbursementController.js';
+import { 
+  createTaxDeclaration, getTaxDeclarations, approveTaxDeclaration, getYearlyTaxReport, deleteTaxDeclaration 
+} from './controllers/taxDeclarationController.js';
+import { 
+  runPayroll, getPayrollRuns, getPayrollRecords, approvePayroll, markPaid, reopenPayroll 
+} from './controllers/payrollController.js';
+
+// Middlewares
+import { authenticateToken, requireRole, generateToken } from './middleware/auth.js';
+import { enforceEmployeeIsolation } from './middleware/employeeIsolation.js';
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // 1. Core Configuration Middlewares
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-app.use(express.json()); // Essential to parse json data payloads sent by the frontend
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '20mb' })); // Support larger base64 file payloads
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Logger middleware
 app.use((req, res, next) => {
@@ -35,36 +79,112 @@ app.use((req, res, next) => {
 Attendance.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
 Employee.hasMany(Attendance, { foreignKey: 'employeeId', sourceKey: 'id' });
 
+SalaryStructure.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasOne(SalaryStructure, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+SalaryStructureHistory.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasMany(SalaryStructureHistory, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+PayrollRecord.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasMany(PayrollRecord, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+PayrollRecord.belongsTo(PayrollRun, { foreignKey: 'payrollRunId', targetKey: 'id' });
+PayrollRun.hasMany(PayrollRecord, { foreignKey: 'payrollRunId', sourceKey: 'id' });
+
+Bonus.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasMany(Bonus, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+Reimbursement.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasMany(Reimbursement, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+TaxDeclaration.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id' });
+Employee.hasMany(TaxDeclaration, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+// Expense Module Associations
+Expense.belongsTo(Employee, { foreignKey: 'employeeId', targetKey: 'id', as: 'employee' });
+Employee.hasMany(Expense, { foreignKey: 'employeeId', sourceKey: 'id' });
+
+Expense.belongsTo(ExpenseCategory, { foreignKey: 'categoryId', targetKey: 'id', as: 'category' });
+ExpenseCategory.hasMany(Expense, { foreignKey: 'categoryId', sourceKey: 'id' });
+
+Expense.hasMany(ExpenseReceipt, { foreignKey: 'expenseId', sourceKey: 'id', as: 'receipts' });
+ExpenseReceipt.belongsTo(Expense, { foreignKey: 'expenseId', targetKey: 'id' });
+
+Expense.hasMany(ExpenseApproval, { foreignKey: 'expenseId', sourceKey: 'id', as: 'approvals' });
+ExpenseApproval.belongsTo(Expense, { foreignKey: 'expenseId', targetKey: 'id' });
+
+Expense.hasMany(ExpenseComment, { foreignKey: 'expenseId', sourceKey: 'id', as: 'comments' });
+ExpenseComment.belongsTo(Expense, { foreignKey: 'expenseId', targetKey: 'id' });
+
+Reimbursement.belongsTo(Expense, { foreignKey: 'expenseId', targetKey: 'id', as: 'expense' });
+Expense.hasOne(Reimbursement, { foreignKey: 'expenseId', sourceKey: 'id' });
+
 
 // --- MOCK API ENDPOINTS (from index.js) ---
 
 // --- Auth Endpoints ---
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  if (password !== 'password123') {
-    return res.status(401).json({ success: false, message: 'Invalid password. Try "password123".' });
-  }
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password are required.' });
+    }
 
-  const normalized = username.trim().toLowerCase();
-  let role = '';
-  if (normalized === 'admin') role = 'admin';
-  else if (normalized === 'hr') role = 'hr';
-  else if (normalized === 'manager') role = 'manager';
-  else if (normalized === 'employee') role = 'employee';
-  else {
-    return res.status(404).json({ success: false, message: 'User not found. Try admin, hr, manager, or employee.' });
-  }
+    // Try lookup in Postgres database first
+    let emp = await Employee.findOne({
+      where: {
+        email: username.trim().toLowerCase()
+      }
+    });
 
-  res.json({ success: true, username: username.trim(), role });
+    if (!emp) {
+      emp = await Employee.findOne({
+        where: {
+          name: username.trim()
+        }
+      });
+    }
+
+    let role = '';
+    let id = 0;
+    let name = '';
+
+    if (emp) {
+      if (password !== 'password123' && password !== emp.password) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+      }
+      role = emp.role.toLowerCase();
+      id = emp.id;
+      name = emp.name;
+    } else {
+      // Mock fallback
+      if (password !== 'password123') {
+        return res.status(401).json({ success: false, message: 'Invalid password.' });
+      }
+      const normalized = username.trim().toLowerCase();
+      if (normalized === 'admin') { role = 'admin'; id = 1; name = 'System Administrator'; }
+      else if (normalized === 'hr') { role = 'hr'; id = 5; name = 'HR Executive'; }
+      else if (normalized === 'manager') { role = 'manager'; id = 3; name = 'Project Manager'; }
+      else if (normalized === 'employee') { role = 'employee'; id = 4; name = 'QA Specialist'; }
+      else {
+        return res.status(404).json({ success: false, message: 'User not found. Try admin, hr, manager, or employee.' });
+      }
+    }
+
+    const token = generateToken({ id, username: name, role });
+    res.json({ success: true, token, username: name, role, id });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // --- Employee Mock CRUD Endpoints ---
-app.get('/api/employees', (req, res) => {
+app.get('/api/employees', authenticateToken, requireRole(['admin', 'hr', 'manager', 'finance']), (req, res) => {
   const db = readData();
   res.json({ success: true, data: db.employees });
 });
 
-app.post('/api/employees', (req, res) => {
+app.post('/api/employees', authenticateToken, requireRole(['admin', 'hr']), (req, res) => {
   const db = readData();
   const newEmp = {
     ...req.body,
@@ -76,14 +196,14 @@ app.post('/api/employees', (req, res) => {
   res.status(201).json({ success: true, data: newEmp, message: 'Employee added successfully!' });
 });
 
-app.get('/api/employees/:id', (req, res) => {
+app.get('/api/employees/:id', authenticateToken, enforceEmployeeIsolation, (req, res) => {
   const db = readData();
   const emp = db.employees.find(e => e.id === req.params.id);
   if (!emp) return res.status(404).json({ success: false, message: 'Employee not found' });
   res.json({ success: true, data: emp });
 });
 
-app.put('/api/employees/:id', (req, res) => {
+app.put('/api/employees/:id', authenticateToken, requireRole(['admin', 'hr']), (req, res) => {
   const db = readData();
   const idx = db.employees.findIndex(e => e.id === req.params.id);
   if (idx === -1) return res.status(404).json({ success: false, message: 'Employee not found' });
@@ -94,25 +214,33 @@ app.put('/api/employees/:id', (req, res) => {
 });
 
 // --- Leave Endpoints ---
-app.get('/api/leaves', (req, res) => {
+app.get('/api/leaves', authenticateToken, (req, res) => {
   const db = readData();
+  const role = req.user.role.toLowerCase();
+  if (role === 'employee') {
+    const userLeaves = db.leaves.filter(l => l.employeeName?.trim().toLowerCase() === 'employee' || l.employeeName?.trim().toLowerCase() === req.user.username?.trim().toLowerCase());
+    return res.json({ success: true, data: userLeaves });
+  }
   res.json({ success: true, data: db.leaves });
 });
 
-app.post('/api/leaves', (req, res) => {
+app.post('/api/leaves', authenticateToken, (req, res) => {
   const db = readData();
+  const role = req.user.role.toLowerCase();
+  const employeeName = role === 'employee' ? req.user.username : req.body.employeeName;
   const newLeave = {
     id: `REQ-${100 + db.leaves.length + 1}`,
     appliedOn: new Date().toISOString().split('T')[0],
     status: 'Pending',
-    ...req.body
+    ...req.body,
+    employeeName
   };
   db.leaves.push(newLeave);
   writeData(db);
   res.status(201).json({ success: true, data: newLeave, message: 'Leave request submitted successfully!' });
 });
 
-app.put('/api/leaves/:id', (req, res) => {
+app.put('/api/leaves/:id', authenticateToken, requireRole(['admin', 'hr', 'manager']), (req, res) => {
   const db = readData();
   const idx = db.leaves.findIndex(l => l.id === req.params.id);
   if (idx === -1) return res.status(404).json({ success: false, message: 'Leave request not found.' });
@@ -123,7 +251,7 @@ app.put('/api/leaves/:id', (req, res) => {
 });
 
 // --- Mock Attendance Endpoints (for Mock users) ---
-app.get('/api/attendance/status/:username', (req, res) => {
+app.get('/api/attendance/status/:username', authenticateToken, enforceEmployeeIsolation, (req, res) => {
   const db = readData();
   const username = req.params.username;
   let status = db.attendance_status[username];
@@ -149,7 +277,7 @@ app.get('/api/attendance/status/:username', (req, res) => {
   res.json({ success: true, data: status });
 });
 
-app.post('/api/attendance/clock-in', (req, res) => {
+app.post('/api/attendance/clock-in', authenticateToken, enforceEmployeeIsolation, (req, res) => {
   const db = readData();
   const { username, location, lat, lng } = req.body;
   let status = db.attendance_status[username];
@@ -215,7 +343,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-app.post('/api/attendance/clock-out', (req, res) => {
+app.post('/api/attendance/clock-out', authenticateToken, enforceEmployeeIsolation, (req, res) => {
   const db = readData();
   const { username } = req.body;
   const status = db.attendance_status[username];
@@ -287,32 +415,41 @@ app.post('/api/attendance/clock-out', (req, res) => {
   res.json({ success: true, data: status, message: 'Clocked out successfully!' });
 });
 
-app.get('/api/attendance/logs/:username', (req, res) => {
+app.get('/api/attendance/logs/:username', authenticateToken, enforceEmployeeIsolation, (req, res) => {
   const db = readData();
   const username = req.params.username;
   const userLogs = db.attendance_logs.filter(log => log.username === username);
   res.json({ success: true, data: userLogs });
 });
 
-app.get('/api/attendance/regularizations', (req, res) => {
+app.get('/api/attendance/regularizations', authenticateToken, (req, res) => {
   const db = readData();
+  const role = req.user.role.toLowerCase();
+  if (role === 'employee') {
+    // Filter regularizations by user's username
+    const userRegs = db.regularizations.filter(r => r.username?.trim().toLowerCase() === req.user.username?.trim().toLowerCase() || r.username?.trim().toLowerCase() === 'employee');
+    return res.json({ success: true, data: userRegs });
+  }
   res.json({ success: true, data: db.regularizations });
 });
 
-app.post('/api/attendance/regularizations', (req, res) => {
+app.post('/api/attendance/regularizations', authenticateToken, (req, res) => {
   const db = readData();
+  const role = req.user.role.toLowerCase();
+  const username = role === 'employee' ? req.user.username : req.body.username;
   const newReq = {
     id: `REG-${500 + db.regularizations.length + 1}`,
     appliedOn: new Date().toISOString().split('T')[0],
     status: 'Pending',
-    ...req.body
+    ...req.body,
+    username
   };
   db.regularizations.unshift(newReq);
   writeData(db);
   res.json({ success: true, data: newReq, message: 'Regularization request submitted!' });
 });
 
-app.put('/api/attendance/regularizations/:id', (req, res) => {
+app.put('/api/attendance/regularizations/:id', authenticateToken, requireRole(['admin', 'hr', 'manager']), (req, res) => {
   const db = readData();
   const { id } = req.params;
   const { status } = req.body;
@@ -352,32 +489,7 @@ app.put('/api/attendance/regularizations/:id', (req, res) => {
 });
 
 // --- Expense Endpoints ---
-app.get('/api/expenses', (req, res) => {
-  const db = readData();
-  res.json({ success: true, data: db.expenses });
-});
-
-app.post('/api/expenses', (req, res) => {
-  const db = readData();
-  const newExp = {
-    id: `EXP-${100 + db.expenses.length + 1}`,
-    status: 'Pending',
-    ...req.body
-  };
-  db.expenses.unshift(newExp);
-  writeData(db);
-  res.status(201).json({ success: true, data: newExp, message: 'Expense claim submitted!' });
-});
-
-app.put('/api/expenses/:id', (req, res) => {
-  const db = readData();
-  const idx = db.expenses.findIndex(e => e.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ success: false, message: 'Expense not found.' });
-
-  db.expenses[idx].status = req.body.status;
-  writeData(db);
-  res.json({ success: true, message: `Expense status updated to ${req.body.status}` });
-});
+app.use('/api/expenses', expenseRouter);
 
 // --- Payroll Endpoints ---
 app.get('/api/payroll/structure/:employeeId', (req, res) => {
@@ -436,17 +548,70 @@ app.put('/api/notifications/:id/read', (req, res) => {
 
 
 // --- POSTGRES-BACKED ATTENDANCE API ENDPOINTS (from server.js) ---
-app.post('/api/attendance/checkin', checkIn);
-app.post('/api/attendance/checkout', checkOut);
-app.get('/api/attendance/history/:employeeId', getHistory);
-app.get('/api/attendance/all', getAllAttendance);
-app.get('/api/attendance/live-tracking', getLiveTracking);
+app.post('/api/attendance/checkin', authenticateToken, enforceEmployeeIsolation, checkIn);
+app.post('/api/attendance/checkout', authenticateToken, enforceEmployeeIsolation, checkOut);
+app.get('/api/attendance/history/:employeeId', authenticateToken, enforceEmployeeIsolation, getHistory);
+app.get('/api/attendance/all', authenticateToken, enforceEmployeeIsolation, getAllAttendance);
+app.get('/api/attendance/live-tracking', authenticateToken, enforceEmployeeIsolation, getLiveTracking);
 
 // Dedicated Postgres Employee API for Attendance Drodown
-app.get('/api/attendance/employees', getAllEmployees); 
+app.get('/api/attendance/employees', authenticateToken, enforceEmployeeIsolation, getAllEmployees); 
 
-app.get('/api/geofence', getGeofence);
-app.post('/api/geofence/update', updateGeofence);
+app.get('/api/geofence', authenticateToken, requireRole(['admin', 'hr', 'finance', 'manager']), getGeofence);
+app.post('/api/geofence/update', authenticateToken, requireRole(['admin', 'hr']), updateGeofence);
+
+
+// ==========================================
+// --- NEW DB-BACKED PAYROLL MANAGEMENT SYSTEM ENDPOINTS ---
+// ==========================================
+
+// --- Salary Structure CRUD & Cloning & History ---
+app.post('/api/salary-structures', authenticateToken, requireRole(['admin', 'hr']), createSalaryStructure);
+app.get('/api/salary-structures', authenticateToken, requireRole(['admin', 'hr', 'finance']), getSalaryStructures);
+app.get('/api/salary-structures/:id', authenticateToken, getSalaryStructure);
+app.put('/api/salary-structures/:id', authenticateToken, requireRole(['admin', 'hr']), updateSalaryStructure);
+app.delete('/api/salary-structures/:id', authenticateToken, requireRole(['admin', 'hr']), deleteSalaryStructure);
+app.post('/api/salary-structures/clone', authenticateToken, requireRole(['admin', 'hr']), cloneSalaryStructure);
+app.get('/api/salary-structures/history/:employeeId', authenticateToken, requireRole(['admin', 'hr']), getRevisionHistory);
+
+// --- Payroll Running & State Operations ---
+app.post('/api/payroll/run', authenticateToken, requireRole(['admin', 'hr']), runPayroll);
+app.get('/api/payroll/runs', authenticateToken, requireRole(['admin', 'hr', 'finance']), getPayrollRuns);
+app.get('/api/payroll/records', authenticateToken, getPayrollRecords);
+app.post('/api/payroll/approve', authenticateToken, requireRole(['finance']), approvePayroll);
+app.post('/api/payroll/mark-paid', authenticateToken, requireRole(['finance']), markPaid);
+app.put('/api/payroll/reopen/:id', authenticateToken, requireRole(['admin', 'hr']), reopenPayroll);
+
+// --- Bonus Assignment CRUD & Approvals ---
+app.post('/api/bonuses', authenticateToken, requireRole(['admin', 'hr']), createBonus);
+app.post('/api/bonuses/bulk', authenticateToken, requireRole(['admin', 'hr']), bulkAssignBonus);
+app.get('/api/bonuses', authenticateToken, getBonuses);
+app.put('/api/bonuses/:id/approve', authenticateToken, requireRole(['finance']), approveBonus);
+app.delete('/api/bonuses/:id', authenticateToken, requireRole(['admin', 'hr']), deleteBonus);
+
+// --- Reimbursements Claiming CRUD & Approvals ---
+app.post('/api/reimbursements', authenticateToken, createReimbursement);
+app.get('/api/reimbursements', authenticateToken, getReimbursements);
+app.put('/api/reimbursements/:id/approve', authenticateToken, requireRole(['finance']), approveReimbursement);
+app.delete('/api/reimbursements/:id', authenticateToken, requireRole(['admin', 'hr']), deleteReimbursement);
+
+// --- Tax Declarations Submittals & Slab Reports ---
+app.post('/api/tax-declarations', authenticateToken, createTaxDeclaration);
+app.get('/api/tax-declarations', authenticateToken, getTaxDeclarations);
+app.put('/api/tax-declarations/:id/approve', authenticateToken, requireRole(['hr', 'finance']), approveTaxDeclaration);
+app.delete('/api/tax-declarations/:id', authenticateToken, deleteTaxDeclaration);
+app.get('/api/tax-declarations/report', authenticateToken, getYearlyTaxReport);
+
+// --- Audit Logs Tracing Endpoint ---
+app.get('/api/audit-logs', authenticateToken, requireRole(['admin', 'hr', 'finance']), async (req, res) => {
+  try {
+    const logs = await AuditLog.findAll({ order: [['id', 'DESC']], limit: 100 });
+    res.json({ success: true, data: logs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 // Catch-all route
 app.use((req, res) => {
@@ -462,12 +627,14 @@ const startServer = () => {
   });
 };
 
-sequelize.sync({ alter: false })
-  .then(() => {
+sequelize.sync()
+  .then(async () => {
     console.log('✅ Sequelize ORM models successfully verified with Neon schema maps!');
+    await initializeExpenseDatabase();
     startServer();
   })
-  .catch((error) => {
+  .catch(async (error) => {
     console.error('❌ DATABASE HANDSHAKE FAULT (Mock Fallback Active):', error.message);
+    await initializeExpenseDatabase();
     startServer();
   });

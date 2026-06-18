@@ -1,0 +1,10 @@
+- [x] Backend: Update `Employee` model and define database models (`SalaryStructure`, `PayrollRun`, `PayrollRecord`, `Bonus`, `Reimbursement`, `TaxDeclaration`, `AuditLog`) in Sequelize
+- [x] Backend: Implement JWT authentication and Role-Based Access Control middleware
+- [x] Backend: Implement CRUD APIs for Salary Structure, Bonus, Reimbursement, and Tax Declaration
+- [x] Backend: Implement Payroll Run Calculation Engine (calculations, leaves integration, LOP, taxes, TDS) and run/approve/pay state workflows
+- [ ] Frontend: Build the Payroll Dashboard showing stats cards and Recharts
+- [ ] Frontend: Build the Run Payroll page with filterable, searchable, sortable list, CSV/Excel export, and actions panel
+- [ ] Frontend: Build the Salary Structure manager (Add/Edit/Delete/Clone/Revision History)
+- [ ] Frontend: Build Tax Details, Bonuses, and Reimbursement pages
+- [ ] Frontend: Build My Payslips page with dynamic payslip PDF generation (digital signature, QR code verification)
+- [ ] Verify: Run backend database migrations, seed initial data, verify build and routing

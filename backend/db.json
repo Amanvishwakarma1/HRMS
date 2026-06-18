@@ -110,6 +110,22 @@
       "elapsedTime": 0,
       "punches": [],
       "date": "2026-06-17"
+    },
+    "System Administrator": {
+      "isClockedIn": false,
+      "lastCheckInTime": null,
+      "accumulatedTime": 0,
+      "elapsedTime": 0,
+      "punches": [],
+      "date": "2026-06-18"
+    },
+    "HR Executive": {
+      "isClockedIn": false,
+      "lastCheckInTime": null,
+      "accumulatedTime": 0,
+      "elapsedTime": 0,
+      "punches": [],
+      "date": "2026-06-18"
     }
   },
   "attendance_logs": [
@@ -492,6 +508,132 @@
     }
   ],
   "notifications": [
+    {
+      "id": "1781779760344kqc",
+      "userId": 4,
+      "type": "error",
+      "title": "Expense Rejected",
+      "message": "Your expense claim EXP-6 was rejected. Reason: bjbj",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779743533pd3",
+      "userId": 4,
+      "type": "error",
+      "title": "Expense Rejected",
+      "message": "Your expense claim EXP-6 was rejected. Reason: jb",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17817796713636hf",
+      "userId": 4,
+      "type": "success",
+      "title": "Expense Finance Approved",
+      "message": "Your claim EXP-8 was approved by Finance.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "178177967021379y",
+      "userId": null,
+      "type": "info",
+      "title": "New Claim Pending Finance Verification",
+      "message": "Claim EXP-8 has been approved by HR and is pending your review.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779670212d7v",
+      "userId": 4,
+      "type": "success",
+      "title": "Expense HR Approved",
+      "message": "Your claim EXP-8 was approved by HR and sent to Finance.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779669069eei",
+      "userId": null,
+      "type": "info",
+      "title": "Expense Resubmitted",
+      "message": "QA Specialist has resubmitted claim EXP-8 with updates.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779667912t71",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-8: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17817795164096av",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-7: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "178177948292784n",
+      "userId": null,
+      "type": "info",
+      "title": "Expense Resubmitted",
+      "message": "QA Specialist has resubmitted claim EXP-6 with updates.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779402405ef2",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-6: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17817793388527ml",
+      "userId": null,
+      "type": "info",
+      "title": "New Claim Pending Finance Verification",
+      "message": "Claim EXP-3 has been approved by HR and is pending your review.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779338850xzf",
+      "userId": 4,
+      "type": "success",
+      "title": "Expense HR Approved",
+      "message": "Your claim EXP-3 was approved by HR and sent to Finance.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17817791759847io",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-5: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781779108358y16",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-4: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
     {
       "id": "1",
       "type": "info",
