@@ -39,28 +39,43 @@ const NotificationLayout = () => {
       display: 'flex',
       gap: '8px',
       borderBottom: '1px solid #e2e8f0',
-      paddingBottom: '0px',
+      paddingBottom: '8px',
       marginBottom: '28px'
-    },
-    tabButton: (isActive) => ({
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      padding: '12px 18px',
-      border: 'none',
-      borderBottom: isActive ? '3px solid #0ea5e9' : '3px solid transparent',
-      background: 'none',
-      color: isActive ? '#0ea5e9' : '#64748b',
-      fontWeight: isActive ? '600' : '500',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      outline: 'none'
-    })
+    }
   };
 
   return (
     <div style={styles.container}>
+      <style>{`
+        .notif-tab-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          font-weight: 500;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .notif-tab-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .notif-tab-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          background-color: transparent;
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+
       <div style={styles.header}>
         <h1 style={styles.title}>Inbox Center</h1>
         <p style={styles.subtitle}>Check your latest alerts, tasks approvals, and system announcements.</p>
@@ -72,14 +87,8 @@ const NotificationLayout = () => {
           return (
             <button
               key={tab.path}
-              style={styles.tabButton(isActive)}
+              className={`notif-tab-btn ${isActive ? 'active' : ''}`}
               onClick={() => navigate(tab.path)}
-              onMouseEnter={(e) => {
-                if (!isActive) e.target.style.color = '#0ea5e9';
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.target.style.color = '#64748b';
-              }}
             >
               {tab.icon}
               {tab.name}

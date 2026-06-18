@@ -1,8 +1,21 @@
 import React from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 const LeaveLayout = () => {
   const navigate = useNavigate();
+
+  // Get current user role from localStorage
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+  const showApprovals = ['admin', 'manager', 'hr'].includes(currentUser.role?.toLowerCase());
+
+  const location = useLocation();
+
+  const isActive = (path) => {
+    if (path === '/leave') {
+      return location.pathname === '/leave';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const styles = {
     container: {
@@ -26,49 +39,63 @@ const LeaveLayout = () => {
     buttonContainer: {
       display: 'flex',
       gap: '10px',
-      flexWrap: 'wrap' // Ensures buttons don't overflow on smaller screens
-    },
-    navButton: {
-      backgroundColor: '#007bff',
-      color: '#ffffff',
-      border: 'none',
-      padding: '8px 16px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500',
-      transition: 'background-color 0.2s'
+      flexWrap: 'wrap'
     }
   };
 
-  const handleMouseOver = (e) => e.target.style.backgroundColor = '#0056b3';
-  const handleMouseOut = (e) => e.target.style.backgroundColor = '#007bff';
-
   return (
     <div style={styles.container}>
+      <style>{`
+        .sub-nav-btn {
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          border: 1px solid transparent;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .sub-nav-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .sub-nav-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+      
       {/* Static Header & Navigation Buttons */}
       <div style={styles.headerWrapper}>
         <h1 style={styles.title}>Leave Management</h1>
         
         <div style={styles.buttonContainer}>
-          <button style={styles.navButton} onClick={() => navigate('/leave')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/leave') ? 'active' : ''}`} onClick={() => navigate('/leave')}>
             Balance
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/leave/apply')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/leave/apply') ? 'active' : ''}`} onClick={() => navigate('/leave/apply')}>
             Apply for Leave
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/leave/calendar')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/leave/calendar') ? 'active' : ''}`} onClick={() => navigate('/leave/calendar')}>
             Calendar
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/leave/policy')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/leave/policy') ? 'active' : ''}`} onClick={() => navigate('/leave/policy')}>
             Policy
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/leave/history')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/leave/history') ? 'active' : ''}`} onClick={() => navigate('/leave/history')}>
             History
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/leave/approval')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-            Approvals
-          </button>
+          {showApprovals && (
+            <button className={`sub-nav-btn ${isActive('/leave/approval') ? 'active' : ''}`} onClick={() => navigate('/leave/approval')}>
+              Approvals
+            </button>
+          )}
         </div>
       </div>
 

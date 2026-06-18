@@ -1,24 +1,154 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
 import { attendanceService } from '../services/attendanceService';
-import { History, Eye, EyeOff, Search } from 'lucide-react';
+import { History, Eye, EyeOff } from 'lucide-react';
 
-const AttendanceHistory = () => {
+export const AttendanceHistory = () => {
   const [logs, setLogs] = useState([]);
   const [expandedLog, setExpandedLog] = useState(null);
   const [filterStatus, setFilterStatus] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Role-based controls state
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('all');
+
+  const storedUser = JSON.parse(localStorage.getItem('currentUser')) || { username: 'User', role: 'employee' };
+  const canViewAll = ['admin', 'hr', 'manager'].includes(storedUser.role);
+
+  // Fetch employee directory for dropdown if authorized
+  useEffect(() => {
+    if (canViewAll) {
+      const loadEmployees = async () => {
+        const list = await attendanceService.getEmployees();
+        setEmployees(list);
+      };
+      loadEmployees();
+    }
+  }, [canViewAll]);
 
   useEffect(() => {
     const fetchLogs = async () => {
-      const res = await attendanceService.getLogs();
-      if (res.success) {
-        setLogs(res.data);
+      setIsLoading(true);
+      
+      if (canViewAll) {
+        if (selectedEmployeeId === 'all') {
+          // Load all records from Postgres
+          const history = await attendanceService.getAllAttendance();
+          const mappedLogs = history.map(r => {
+            const checkInTime = r.check_in_time ? new Date(r.check_in_time) : null;
+            const checkOutTime = r.check_out_time ? new Date(r.check_out_time) : null;
+            
+            let activeHours = r.total_hours ? String(r.total_hours) : '0.0';
+            if (checkInTime && checkOutTime && (!r.total_hours || r.total_hours === 0)) {
+              const diffMs = checkOutTime - checkInTime;
+              activeHours = (Math.max(0, diffMs / (1000 * 60 * 60))).toFixed(1);
+            }
+            
+            return {
+              id: r.id,
+              employeeId: r.employee_id,
+              employeeName: r.employee_name || 'Unknown',
+              employeeRole: r.employee_role || '',
+              date: r.check_in_time ? new Date(r.check_in_time).toISOString().split('T')[0] : '--',
+              status: r.status || 'Present',
+              checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              activeHours,
+              breakHours: '0.0',
+              punches: r.check_in_time ? [{
+                in: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                out: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                location: 'Office'
+              }] : []
+            };
+          });
+          setLogs(mappedLogs);
+        } else {
+          // Load specific employee's records
+          const empId = Number(selectedEmployeeId);
+          const emp = employees.find(e => Number(e.id) === empId) || { name: 'Employee' };
+          const history = await attendanceService.getAttendanceHistory(empId);
+          const mappedLogs = history.map(h => {
+            const checkInTime = h.checkIn ? new Date(h.checkIn) : null;
+            const checkOutTime = h.checkOut ? new Date(h.checkOut) : null;
+            
+            let activeHours = '0.0';
+            if (checkInTime && checkOutTime) {
+              const diffMs = checkOutTime - checkInTime;
+              activeHours = (Math.max(0, diffMs / (1000 * 60 * 60))).toFixed(1);
+            }
+            
+            return {
+              id: h.id,
+              employeeId: empId,
+              employeeName: emp.name,
+              employeeRole: emp.role,
+              date: h.date,
+              status: h.status || 'Present',
+              checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              activeHours,
+              breakHours: '0.0',
+              punches: h.checkIn ? [{
+                in: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                out: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                location: 'Office'
+              }] : []
+            };
+          });
+          setLogs(mappedLogs);
+        }
+      } else {
+        // Fallback for regular employees
+        const activeId = localStorage.getItem('active_employee_id') || '4';
+        
+        if (activeId && !isNaN(activeId)) {
+          const history = await attendanceService.getAttendanceHistory(Number(activeId));
+          const mappedLogs = history.map(h => {
+            const checkInTime = h.checkIn ? new Date(h.checkIn) : null;
+            const checkOutTime = h.checkOut ? new Date(h.checkOut) : null;
+            
+            let activeHours = '0.0';
+            if (checkInTime && checkOutTime) {
+              const diffMs = checkOutTime - checkInTime;
+              activeHours = (Math.max(0, diffMs / (1000 * 60 * 60))).toFixed(1);
+            }
+            
+            return {
+              id: h.id,
+              date: h.date,
+              status: h.status || 'Present',
+              checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+              activeHours,
+              breakHours: '0.0',
+              punches: h.checkIn ? [{
+                in: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                out: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--',
+                location: 'Office'
+              }] : []
+            };
+          });
+          setLogs(mappedLogs);
+        } else {
+          const res = await attendanceService.getLogs();
+          if (res.success) {
+            setLogs(res.data);
+          }
+        }
       }
       setIsLoading(false);
     };
+
     fetchLogs();
-  }, []);
+    
+    window.addEventListener('attendance_update', fetchLogs);
+    window.addEventListener('storage', fetchLogs);
+    return () => {
+      window.removeEventListener('attendance_update', fetchLogs);
+      window.removeEventListener('storage', fetchLogs);
+    };
+  }, [selectedEmployeeId, employees, canViewAll]);
 
   const styles = {
     card: {
@@ -83,15 +213,16 @@ const AttendanceHistory = () => {
       border: '1px solid #cbd5e1',
       fontSize: '14px',
       outline: 'none',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      backgroundColor: 'white'
     }
   };
 
-  const toggleRow = (date) => {
-    if (expandedLog === date) {
+  const toggleRow = (id) => {
+    if (expandedLog === id) {
       setExpandedLog(null);
     } else {
-      setExpandedLog(date);
+      setExpandedLog(id);
     }
   };
 
@@ -110,20 +241,38 @@ const AttendanceHistory = () => {
           Attendance History Logs
         </h3>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '14px', color: '#64748b' }}>Filter Status:</span>
-          <select 
-            style={styles.select}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="All">All Days</option>
-            <option value="Present">Present</option>
-            <option value="Late">Late</option>
-            <option value="Half Day">Half Day</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Absent">Absent</option>
-          </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+          {canViewAll && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '14px', color: '#64748b' }}>Employee:</span>
+              <select 
+                style={styles.select}
+                value={selectedEmployeeId}
+                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              >
+                <option value="all">All Employees</option>
+                {employees.map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px', color: '#64748b' }}>Filter Status:</span>
+            <select 
+              style={styles.select}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="All">All Days</option>
+              <option value="Present">Present</option>
+              <option value="Late">Late</option>
+              <option value="Half Day">Half Day</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -131,32 +280,40 @@ const AttendanceHistory = () => {
         <table style={styles.table}>
           <thead>
             <tr>
+              {selectedEmployeeId === 'all' && <th style={styles.th}>Employee</th>}
               <th style={styles.th}>Date</th>
               <th style={styles.th}>Status</th>
               <th style={styles.th}>First In</th>
               <th style={styles.th}>Last Out</th>
               <th style={styles.th}>Active Hours</th>
               <th style={styles.th}>Break Hours</th>
-              <th style={styles.th} style={{ textAlign: 'center' }}>Details</th>
+              <th style={{ ...styles.th, textAlign: 'center' }}>Details</th>
             </tr>
           </thead>
           <tbody>
             {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '32px' }}>
+                <td colSpan={selectedEmployeeId === 'all' ? 8 : 7} style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '32px' }}>
                   No attendance records found matching this status filter.
                 </td>
               </tr>
             ) : (
-              filteredLogs.map((log) => {
-                const isExpanded = expandedLog === log.date;
+              filteredLogs.map((log, index) => {
+                const uniqueKey = log.id || `${log.employeeId}-${log.date}-${index}`;
+                const isExpanded = expandedLog === uniqueKey;
                 const dateObj = new Date(log.date);
                 const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                const formattedDate = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                const formattedDate = isNaN(dateObj.getTime()) ? log.date : dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
 
                 return (
-                  <React.Fragment key={log.date}>
-                    <tr style={{ cursor: 'pointer' }} onClick={() => toggleRow(log.date)}>
+                  <React.Fragment key={uniqueKey}>
+                    <tr style={{ cursor: 'pointer' }} onClick={() => toggleRow(uniqueKey)}>
+                      {selectedEmployeeId === 'all' && (
+                        <td style={styles.td}>
+                          <strong>{log.employeeName}</strong>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>{log.employeeRole}</div>
+                        </td>
+                      )}
                       <td style={styles.td}>
                         <strong>{formattedDate}</strong> <span style={{ color: '#94a3b8', fontSize: '12px' }}>({dayName})</span>
                       </td>
@@ -164,7 +321,7 @@ const AttendanceHistory = () => {
                         <span style={styles.badge(log.status)}>{log.status}</span>
                       </td>
                       <td style={styles.td}>{log.checkIn}</td>
-                      <td style={styles.td}>{log.checkOut}</td>
+                      <td style={styles.td}>{log.checkOut || '--:--:--'}</td>
                       <td style={styles.td}><strong>{log.activeHours} hrs</strong></td>
                       <td style={styles.td}>{log.breakHours} hrs</td>
                       <td style={{ ...styles.td, textAlign: 'center' }}>
@@ -174,7 +331,7 @@ const AttendanceHistory = () => {
                     
                     {isExpanded && (
                       <tr style={styles.expandedRow}>
-                        <td colSpan={7} style={{ padding: '16px 32px' }}>
+                        <td colSpan={selectedEmployeeId === 'all' ? 8 : 7} style={{ padding: '16px 32px' }}>
                           <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#1e293b' }}>Detailed Punches for {formattedDate}:</h4>
                           {log.punches && log.punches.length > 0 ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
@@ -209,119 +366,3 @@ const AttendanceHistory = () => {
 };
 
 export default AttendanceHistory;
-=======
-import { AttendanceTable } from '../components/AttendanceTable';
-import { attendanceService } from '../services/attendanceService';
-
-export const AttendanceHistory = () => {
-  const [records, setRecords] = useState([]);
-  const [filteredRecords, setFilteredRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
-  // 1. Database Log Pipeline Synchronizer
-  const pullLogs = () => {
-    setLoading(true);
-    const activeEmpId = Number(localStorage.getItem('active_employee_id') || '2');
-    attendanceService.getAttendanceHistory(activeEmpId)
-      .then(history => {
-        // Chronological order configuration (Newest logged events appear first)
-        history.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setRecords(history);
-        setFilteredRecords(history);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch history matrix:", err);
-        setRecords([]);
-        setFilteredRecords([]);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    pullLogs();
-    
-    // Cross-tab / Cross-view structural live listener hook
-    window.addEventListener('storage', pullLogs);
-    window.addEventListener('attendance_update', pullLogs);
-    return () => {
-      window.removeEventListener('storage', pullLogs);
-      window.removeEventListener('attendance_update', pullLogs);
-    };
-  }, []);
-
-  // 2. Filter Application Handlers
-  const handleFilterApplication = (e) => {
-    e.preventDefault();
-    let computed = [...records];
-    if (startDate) {
-      computed = computed.filter(r => r.date >= startDate);
-    }
-    if (endDate) {
-      computed = computed.filter(r => r.date <= endDate);
-    }
-    setFilteredRecords(computed);
-  };
-
-  const clearFilters = () => {
-    setStartDate('');
-    setEndDate('');
-    setFilteredRecords(records);
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* SECTION HEADER BLOCK */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Operational Verification Logs</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Immutable multi-node verification records system history logs.</p>
-        </div>
-
-        {/* DATE FORM TOOLBAR */}
-        <form onSubmit={handleFilterApplication} className="flex flex-wrap items-end gap-3 bg-white p-3 border border-slate-100 shadow-sm rounded-xl text-xs">
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Start Key</label>
-            <input 
-              type="date" 
-              value={startDate} 
-              onChange={e => setStartDate(e.target.value)}
-              className="border border-slate-200 rounded p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono text-slate-700 bg-slate-50"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">End Key</label>
-            <input 
-              type="date" 
-              value={endDate} 
-              onChange={e => setEndDate(e.target.value)}
-              className="border border-slate-200 rounded p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono text-slate-700 bg-slate-50"
-            />
-          </div>
-          <div className="flex space-x-1.5">
-            <button type="submit" className="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-1.5 px-3 rounded shadow-sm transition-colors">
-              Filter
-            </button>
-            <button type="button" onClick={clearFilters} className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-1.5 px-3 rounded border border-slate-200 transition-colors">
-              Clear
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* RENDER ACTIVE HISTORY TABLE MATRIX */}
-      <AttendanceTable records={filteredRecords} loading={loading} />
-      
-      {/* SYSTEM META METRIC TRACKER */}
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-mono text-slate-600 flex justify-between items-center">
-        <span>System Log Buffer Pipeline Status:</span>
-        <span className="text-emerald-600 font-bold tracking-wide uppercase">
-          Telemetry Interlocked & Stream Synchronized
-        </span>
-      </div>
-    </div>
-  );
-};
->>>>>>> 077d9bac6d2e1f9ec4139220792812a0a3ab0c43

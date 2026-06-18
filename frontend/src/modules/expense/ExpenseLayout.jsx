@@ -1,8 +1,16 @@
 import React from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 const ExpenseLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => {
+    if (path === '/expenses') {
+      return location.pathname === '/expenses';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Consistent inline styling matching your Leave and Employee modules
   const styles = {
@@ -28,25 +36,37 @@ const ExpenseLayout = () => {
       display: 'flex',
       gap: '10px',
       flexWrap: 'wrap'
-    },
-    navButton: {
-      backgroundColor: '#007bff',
-      color: '#ffffff',
-      border: 'none',
-      padding: '8px 16px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500',
-      transition: 'background-color 0.2s'
     }
   };
 
-  const handleMouseOver = (e) => e.target.style.backgroundColor = '#0056b3';
-  const handleMouseOut = (e) => e.target.style.backgroundColor = '#007bff';
-
   return (
     <div style={styles.container}>
+      <style>{`
+        .sub-nav-btn {
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          border: 1px solid transparent;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .sub-nav-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .sub-nav-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+      
       {/* Static Header & Navigation Buttons */}
       <div style={styles.headerWrapper}>
         <h1 style={styles.title}>Expense Management</h1>
@@ -55,19 +75,19 @@ const ExpenseLayout = () => {
         </p>
         
         <div style={styles.buttonContainer}>
-          <button style={styles.navButton} onClick={() => navigate('/expenses')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/expenses') && !location.pathname.includes('/submit') && !location.pathname.includes('/status') && !location.pathname.includes('/approvals') && !location.pathname.includes('/policy') ? 'active' : ''}`} onClick={() => navigate('/expenses')}>
             Expense History
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/expenses/submit')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/expenses/submit') ? 'active' : ''}`} onClick={() => navigate('/expenses/submit')}>
             Submit Expense
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/expenses/status')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/expenses/status') ? 'active' : ''}`} onClick={() => navigate('/expenses/status')}>
             Reimbursement Status
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/expenses/approvals')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/expenses/approvals') ? 'active' : ''}`} onClick={() => navigate('/expenses/approvals')}>
             Approvals
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/expenses/policy')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/expenses/policy') ? 'active' : ''}`} onClick={() => navigate('/expenses/policy')}>
             Policy
           </button>
         </div>

@@ -97,6 +97,11 @@ async function seed() {
       }
     }
 
+    console.log("Fixing database auto-increment sequences...");
+    await sequelize.query(`SELECT setval('attendance_id_seq', COALESCE((SELECT MAX(id) FROM attendance), 1))`);
+    await sequelize.query(`SELECT setval('employees_id_seq', COALESCE((SELECT MAX(id) FROM employees), 1))`);
+    await sequelize.query(`SELECT setval('locations_id_seq', COALESCE((SELECT MAX(id) FROM locations), 1))`);
+
     console.log("Database seeded successfully!");
   } catch (err) {
     console.error("Error seeding database:", err);

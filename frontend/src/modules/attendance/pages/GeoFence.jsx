@@ -35,16 +35,8 @@ const GeoFence = () => {
   // SVG center is (150, 150) - representing the office
   let empX = 150;
   let empY = 150;
-
   if (simulationMode === 'OfficeDesk') {
     empX = 145; empY = 145;
-  } else if (simulationMode === 'OfficeEntrance') {
-    empX = 175; empY = 110;
-  } else if (simulationMode === 'NearbyCafe') {
-    empX = 230; empY = 60;
-  } else if (simulationMode === 'HomeRemote') {
-    empX = 280; empY = 30;
-  }
   } else if (simulationMode === 'OfficeEntrance') {
     empX = 175; empY = 110;
   } else if (simulationMode === 'NearbyCafe') {

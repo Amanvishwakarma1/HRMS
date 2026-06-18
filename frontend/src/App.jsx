@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./modules/auth/pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -43,13 +42,16 @@ import Reimbursement from "./modules/payroll/pages/Reimbursement";
 
 // Attendance Module
 import AttendanceLayout from "./modules/attendance/pages/AttendanceLayout";
-import AttendanceDashboard from "./modules/attendance/pages/Dashboard";
+import { AttendanceDashboard } from "./modules/attendance/pages/AttendanceDashboard";
 import AttendanceCalendar from "./modules/attendance/pages/AttendanceCalendar";
 import AttendanceHistory from "./modules/attendance/pages/AttendanceHistory";
 import Regularization from "./modules/attendance/pages/Regularization";
 import ShiftManagement from "./modules/attendance/pages/ShiftManagement";
 import Overtime from "./modules/attendance/pages/Overtime";
 import GeoFence from "./modules/attendance/pages/GeoFence";
+import LiveTracking from "./modules/attendance/pages/LiveTracking";
+import TopologyView from "./modules/attendance/pages/TopologyView";
+import { GeofenceSettings } from "./modules/attendance/pages/GeofenceSettings";
 
 // Notification Module
 import NotificationLayout from "./modules/notifications/pages/NotificationLayout";
@@ -79,6 +81,8 @@ function App() {
             <Route path="shifts" element={<ShiftManagement />} />
             <Route path="overtime" element={<Overtime />} />
             <Route path="geofence" element={<GeoFence />} />
+            <Route path="tracking" element={<LiveTracking />} />
+            <Route path="topology" element={<TopologyView />} />
           </Route>
 
           {/* Leave Module */}
@@ -128,16 +132,13 @@ function App() {
           
           {/* 6. Org Settings */}
           <Route path="settings" element={<OrgSettingsPage />} />
+
+          {/* 7. Geofence Configuration Management */}
+          <Route path="geofence" element={<GeofenceSettings />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
-=======
-import AppRoutes from "./routes/AppRoutes";
-
-function App() {
-  return <AppRoutes />;
->>>>>>> 077d9bac6d2e1f9ec4139220792812a0a3ab0c43
 }
 
 export default App;

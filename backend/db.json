@@ -57,6 +57,16 @@
       "reason": "Family vacation",
       "status": "Approved",
       "appliedOn": "2026-06-10"
+    },
+    {
+      "id": "REQ-103",
+      "appliedOn": "2026-06-17",
+      "status": "Approved",
+      "type": "Casual Leave",
+      "startDate": "2095-12-12",
+      "endDate": "3095-12-12",
+      "reason": "going to other universe",
+      "employeeName": "employee"
     }
   ],
   "attendance_status": {
@@ -91,6 +101,14 @@
           "duration": "0.00 hrs"
         }
       ],
+      "date": "2026-06-17"
+    },
+    "hr": {
+      "isClockedIn": false,
+      "lastCheckInTime": null,
+      "accumulatedTime": 0,
+      "elapsedTime": 0,
+      "punches": [],
       "date": "2026-06-17"
     }
   },

@@ -5,6 +5,9 @@ import {
 } from 'lucide-react';
 
 const Departments = () => {
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+  const isEmployee = currentUser.role === 'employee';
+
   const [departments, setDepartments] = useState([
     { id: 'DEPT-01', name: 'Engineering', head: 'Alice Smith', employees: 42, status: 'Active', budget: '4.5' },
     { id: 'DEPT-02', name: 'Human Resources', head: 'Bob Johnson', employees: 8, status: 'Active', budget: '1.2' },
@@ -78,14 +81,14 @@ const Departments = () => {
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' },
     addBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', backgroundColor: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.25)' },
     statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' },
-    statCard: { backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '20px' },
+    statCard: { background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.45)', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' },
     statIcon: (bg, color) => ({ width: '56px', height: '56px', borderRadius: '14px', backgroundColor: bg, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }),
-    contentCard: { backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'visible' },
+    contentCard: { background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.45)', overflow: 'visible', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' },
     table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-    th: { padding: '16px 24px', backgroundColor: '#f8fafc', color: '#475569', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' },
-    td: { padding: '16px 24px', borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px', position: 'relative' },
+    th: { padding: '16px 24px', backgroundColor: 'rgba(15, 23, 42, 0.05)', color: '#0f172a', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', borderBottom: '1px solid rgba(15, 23, 42, 0.08)' },
+    td: { padding: '16px 24px', borderBottom: '1px solid rgba(15, 23, 42, 0.08)', color: '#334155', fontSize: '14px', position: 'relative' },
     modalOverlay: { position: 'fixed', top:0, left:0, right:0, bottom:0, backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    modalContent: { backgroundColor: '#fff', padding: '32px', borderRadius: '20px', width: '450px', position: 'relative' },
+    modalContent: { background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '32px', borderRadius: '20px', width: '450px', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15)' },
     input: { width: '100%', padding: '12px', margin: '8px 0 16px 0', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }
   };
 
@@ -93,7 +96,7 @@ const Departments = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div><h1 style={{fontSize:'28px', margin:0}}>Departments</h1><p style={{color:'#64748b'}}>Manage structure and heads.</p></div>
-        <button style={styles.addBtn} onClick={() => setIsModalOpen(true)}><Plus size={18} /> Add Department</button>
+        {!isEmployee && <button style={styles.addBtn} onClick={() => setIsModalOpen(true)}><Plus size={18} /> Add Department</button>}
       </div>
 
       <div style={styles.statsGrid}>
@@ -105,7 +108,7 @@ const Departments = () => {
       <div style={styles.contentCard}>
         <div style={{padding: '20px'}}><input style={{...styles.input, marginBottom: 0, paddingLeft: 40}} placeholder="Search departments..." onChange={(e) => setSearchTerm(e.target.value)} /></div>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>ID</th><th style={styles.th}>Name</th><th style={styles.th}>Head</th><th style={styles.th}>Employees</th><th style={styles.th}>Status</th><th style={styles.th}>Budget (M)</th><th style={styles.th}>Actions</th></tr></thead>
+          <thead><tr><th style={styles.th}>ID</th><th style={styles.th}>Name</th><th style={styles.th}>Head</th><th style={styles.th}>Employees</th><th style={styles.th}>Status</th><th style={styles.th}>Budget (M)</th>{!isEmployee && <th style={styles.th}>Actions</th>}</tr></thead>
           <tbody>
             {filtered.map(d => (
               <tr key={d.id}>
@@ -115,15 +118,17 @@ const Departments = () => {
                 <td style={styles.td}>{d.employees}</td>
                 <td style={styles.td}><span style={{padding:'4px 10px', borderRadius:'20px', backgroundColor:'#d1fae5', color:'#059669', fontSize:12, fontWeight:600}}>{d.status}</span></td>
                 <td style={styles.td}>₹{d.budget}</td>
-                <td style={styles.td}>
-                  <button onClick={(e) => toggleDropdown(d.id, e)} style={{background:'none', border:'none', cursor:'pointer'}}><MoreVertical size={16}/></button>
-                  {activeDropdown === d.id && (
-                    <div ref={dropdownRef} style={{position:'absolute', right: '40px', backgroundColor:'#fff', border:'1px solid #e2e8f0', padding:'5px', zIndex:10, borderRadius:'8px', boxShadow:'0 10px 15px -3px rgba(0,0,0,0.1)'}}>
-                      <button style={{display:'block', width:'120px', border:'none', padding:'8px 12px', background:'none', cursor:'pointer', textAlign:'left'}} onClick={() => handleEditClick(d)}><Edit2 size={14} style={{marginRight:8}}/>Edit</button>
-                      <button style={{display:'block', width:'120px', border:'none', padding:'8px 12px', background:'none', cursor:'pointer', color:'red', textAlign:'left'}} onClick={() => handleDelete(d.id)}><Trash2 size={14} style={{marginRight:8}}/>Delete</button>
-                    </div>
-                  )}
-                </td>
+                {!isEmployee && (
+                  <td style={styles.td}>
+                    <button onClick={(e) => toggleDropdown(d.id, e)} style={{background:'none', border:'none', cursor:'pointer'}}><MoreVertical size={16}/></button>
+                    {activeDropdown === d.id && (
+                      <div ref={dropdownRef} style={{position:'absolute', right: '40px', background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.95) 0%, rgba(232, 235, 242, 0.95) 50%, rgba(226, 231, 237, 0.95) 100%)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', padding:'5px', zIndex:10, borderRadius:'8px', boxShadow:'0 10px 15px -3px rgba(0,0,0,0.1)'}}>
+                        <button style={{display:'block', width:'120px', border:'none', padding:'8px 12px', background:'none', cursor:'pointer', textAlign:'left'}} onClick={() => handleEditClick(d)}><Edit2 size={14} style={{marginRight:8}}/>Edit</button>
+                        <button style={{display:'block', width:'120px', border:'none', padding:'8px 12px', background:'none', cursor:'pointer', color:'red', textAlign:'left'}} onClick={() => handleDelete(d.id)}><Trash2 size={14} style={{marginRight:8}}/>Delete</button>
+                      </div>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

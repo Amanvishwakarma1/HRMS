@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, History, PenTool, ShieldAlert, Clock, MapPin } from 'lucide-react';
+import { LayoutDashboard, Calendar, History, PenTool, ShieldAlert, Clock, MapPin, Map, Network } from 'lucide-react';
 
 const AttendanceLayout = () => {
   const navigate = useNavigate();
@@ -14,6 +14,8 @@ const AttendanceLayout = () => {
     { name: 'Shift & Schedule', path: '/attendance/shifts', icon: <Clock size={16} /> },
     { name: 'Overtime', path: '/attendance/overtime', icon: <ShieldAlert size={16} /> },
     { name: 'Geofence & GPS', path: '/attendance/geofence', icon: <MapPin size={16} /> },
+    { name: 'Live Tracking', path: '/attendance/tracking', icon: <Map size={16} /> },
+    { name: 'Topology View', path: '/attendance/topology', icon: <Network size={16} /> },
   ];
 
   const styles = {
@@ -43,32 +45,46 @@ const AttendanceLayout = () => {
       display: 'flex',
       gap: '8px',
       borderBottom: '1px solid #e2e8f0',
-      paddingBottom: '0px',
+      paddingBottom: '8px',
       marginBottom: '28px',
       overflowX: 'auto',
       whiteSpace: 'nowrap',
       scrollbarWidth: 'none' // Firefox
-    },
-    tabButton: (isActive) => ({
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      padding: '12px 18px',
-      border: 'none',
-      borderBottom: isActive ? '3px solid #0ea5e9' : '3px solid transparent',
-      background: 'none',
-      color: isActive ? '#0ea5e9' : '#64748b',
-      fontWeight: isActive ? '600' : '500',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      borderRadius: '4px 4px 0 0',
-      outline: 'none'
-    })
+    }
   };
 
   return (
     <div style={styles.container}>
+      <style>{`
+        .att-tab-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          font-weight: 500;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .att-tab-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .att-tab-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          background-color: transparent;
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+
       <div style={styles.header}>
         <h1 style={styles.title}>Me & Attendance</h1>
         <p style={styles.subtitle}>Track your work timings, log shifts, and manage logs.</p>
@@ -80,14 +96,8 @@ const AttendanceLayout = () => {
           return (
             <button
               key={tab.path}
-              style={styles.tabButton(isActive)}
+              className={`att-tab-btn ${isActive ? 'active' : ''}`}
               onClick={() => navigate(tab.path)}
-              onMouseEnter={(e) => {
-                if (!isActive) e.target.style.color = '#0ea5e9';
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.target.style.color = '#64748b';
-              }}
             >
               {tab.icon}
               {tab.name}

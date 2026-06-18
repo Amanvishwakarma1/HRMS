@@ -22,7 +22,7 @@ const EditEmployee = () => {
 
   // Reusable inline styles matching your Add form
   const styles = {
-    card: { padding: '24px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' },
+    card: { padding: '24px', background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '16px', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' },
     formGroup: { marginBottom: '16px' },
     label: { display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' },
     input: { width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' },

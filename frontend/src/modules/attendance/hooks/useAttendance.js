@@ -1,8 +1,9 @@
-<<<<<<< HEAD
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { attendanceService } from '../services/attendanceService';
+import { geofenceService } from '../services/geofenceService';
 
 export const useAttendance = () => {
+  // Mock Mode States
   const [status, setStatus] = useState({
     isClockedIn: false,
     lastCheckInTime: null,
@@ -12,100 +13,55 @@ export const useAttendance = () => {
     date: new Date().toISOString().split('T')[0]
   });
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [loading, setLoading] = useState(true);
 
-  const loadStatus = async () => {
-    const fresh = await attendanceService.getTodayStatus();
-    setStatus(fresh);
-    setElapsedTime(fresh.elapsedTime);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadStatus();
-  }, []);
-
-  useEffect(() => {
-    let interval = null;
-    if (status.isClockedIn) {
-      interval = setInterval(() => {
-        setElapsedTime(prev => prev + 1);
-      }, 1000);
-    } else {
-      setElapsedTime(status.elapsedTime);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [status.isClockedIn, status.elapsedTime]);
-
-  const clockIn = async (locationType = 'Office', lat, lng) => {
-    const res = await attendanceService.clockIn(locationType, lat, lng);
-    if (res.success) {
-      setStatus(res.data);
-      setElapsedTime(res.data.elapsedTime);
-    }
-    return res;
-  };
-
-  const clockOut = async () => {
-    const res = await attendanceService.clockOut();
-    if (res.success) {
-      setStatus(res.data);
-      setElapsedTime(res.data.elapsedTime);
-    }
-    return res;
-  };
-
-  return {
-    isClockedIn: status.isClockedIn,
-    punches: status.punches,
-    elapsedTime,
-    clockIn,
-    clockOut,
-    refreshStatus: loadStatus,
-    status,
-    loading
-  };
-};
-export default useAttendance;
-=======
-import { useState, useEffect, useCallback } from 'react';
-import { attendanceService } from '../services/attendanceService';
-import { geofenceService } from '../services/geofenceService';
-
-export const useAttendance = () => {
+  // Postgres Mode States
   const [records, setRecords] = useState([]);
   const [todayRecord, setTodayRecord] = useState(null);
+  const [officeConfig, setOfficeConfig] = useState({ lat: 28.6282, lng: 77.3898, radius: 200, officeName: 'Headquarters Alpha' });
+
+  // Common States
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [officeConfig, setOfficeConfig] = useState({ lat: 28.6282, lng: 77.3898, radius: 200, officeName: 'Headquarters Alpha' });
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const activeEmpId = Number(localStorage.getItem('active_employee_id') || '2');
-      
-      // Load geofence config from locations table
-      const geofence = await geofenceService.fetchOfficeLocation();
-      setOfficeConfig(geofence);
+      const activeEmpId = localStorage.getItem('active_employee_id') || '2';
 
-      // Load attendance history for active employee
-      const history = await attendanceService.getAttendanceHistory(activeEmpId);
-      setRecords(history);
+      if (!isNaN(activeEmpId)) {
+        // Postgres Mode
+        const empIdNum = Number(activeEmpId);
+        
+        // Load geofence config
+        try {
+          const geofence = await geofenceService.fetchOfficeLocation();
+          if (geofence) setOfficeConfig(geofence);
+        } catch (e) {
+          console.error("Geofence load error:", e);
+        }
 
-      // Load today's check-in status
-      const today = await attendanceService.getTodayStatus(activeEmpId);
-      setTodayRecord(today);
-      
-      // Update check in localStorage flag
-      if (today && !today.checkOut) {
-        localStorage.setItem('is_checked_in', 'true');
-        localStorage.setItem('today_check_in_time', today.checkIn ? new Date(today.checkIn).toLocaleTimeString() : '--:--:--');
+        // Load attendance history
+        const history = await attendanceService.getAttendanceHistory(empIdNum);
+        setRecords(history);
+
+        // Load today's check-in status
+        const today = await attendanceService.getTodayStatus(empIdNum);
+        setTodayRecord(today);
+        
+        if (today && !today.checkOut) {
+          localStorage.setItem('is_checked_in', 'true');
+          localStorage.setItem('today_check_in_time', today.checkIn ? new Date(today.checkIn).toLocaleTimeString() : '--:--:--');
+        } else {
+          localStorage.setItem('is_checked_in', 'false');
+        }
       } else {
-        localStorage.setItem('is_checked_in', 'false');
+        // Mock Mode (String / Username based)
+        const username = activeEmpId;
+        const fresh = await attendanceService.getTodayStatus(username);
+        setStatus(fresh);
+        setElapsedTime(fresh.elapsedTime || 0);
       }
     } catch (err) {
       console.error("Error fetching attendance status:", err);
@@ -132,6 +88,47 @@ export const useAttendance = () => {
     };
   }, [fetchStatus]);
 
+  // Live Timer for Mock Mode
+  useEffect(() => {
+    let interval = null;
+    if (status.isClockedIn) {
+      interval = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      setElapsedTime(status.elapsedTime || 0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status.isClockedIn, status.elapsedTime]);
+
+  // Mock Mode Action Handlers
+  const clockIn = async (locationType = 'Office', lat, lng) => {
+    setActionLoading(true);
+    const res = await attendanceService.clockIn(locationType, lat, lng);
+    if (res.success) {
+      setStatus(res.data);
+      setElapsedTime(res.data.elapsedTime || 0);
+      window.dispatchEvent(new Event('attendance_update'));
+    }
+    setActionLoading(false);
+    return res;
+  };
+
+  const clockOut = async () => {
+    setActionLoading(true);
+    const res = await attendanceService.clockOut();
+    if (res.success) {
+      setStatus(res.data);
+      setElapsedTime(res.data.elapsedTime || 0);
+      window.dispatchEvent(new Event('attendance_update'));
+    }
+    setActionLoading(false);
+    return res;
+  };
+
+  // Postgres Mode Action Handlers
   const executeCheckIn = async (customLoc) => {
     setActionLoading(true);
     setError(null);
@@ -173,16 +170,29 @@ export const useAttendance = () => {
   };
 
   return {
+    // Mock Mode Outputs
+    isClockedIn: status.isClockedIn,
+    punches: status.punches,
+    elapsedTime,
+    clockIn,
+    clockOut,
+    refreshStatus: fetchStatus,
+    status,
+
+    // Postgres Mode Outputs
     records,
     todayRecord,
     officeConfig,
-    loading,
-    actionLoading,
-    error,
     executeCheckIn,
     executeCheckOut,
     fetchStatus,
-    refresh: fetchStatus
+    refresh: fetchStatus,
+
+    // Common
+    loading,
+    actionLoading,
+    error
   };
 };
->>>>>>> 077d9bac6d2e1f9ec4139220792812a0a3ab0c43
+
+export default useAttendance;

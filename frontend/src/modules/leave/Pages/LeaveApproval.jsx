@@ -9,7 +9,16 @@ const LeaveApproval = () => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
   
   // 2. Define which roles are allowed to approve/reject
-  const canApprove = ['admin', 'manager', 'hr'].includes(currentUser.role);
+  const canApprove = ['admin', 'manager', 'hr'].includes(currentUser.role?.toLowerCase());
+
+  if (!canApprove) {
+    return (
+      <div style={{ padding: '40px 24px', textAlign: 'center', fontFamily: 'system-ui, -apple-system, sans-serif', background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+        <h2 style={{ color: '#ef4444', fontSize: '24px', fontWeight: 'bold', margin: '0 0 12px 0' }}>Access Denied</h2>
+        <p style={{ color: '#4b5563', margin: 0, fontSize: '15px' }}>You do not have permissions to access this screen.</p>
+      </div>
+    );
+  }
 
   const fetchLeaves = async () => {
     setIsLoading(true);
@@ -44,10 +53,10 @@ const LeaveApproval = () => {
   };
 
   const styles = {
-    card: { backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' },
+    card: { background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' },
     table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-    th: { padding: '16px', backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb', color: '#4b5563', fontWeight: '600', fontSize: '14px' },
-    td: { padding: '16px', borderBottom: '1px solid #e5e7eb', color: '#374151', fontSize: '14px' },
+    th: { padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.05)', borderBottom: '2px solid rgba(15, 23, 42, 0.08)', color: '#0f172a', fontWeight: '700', fontSize: '14px' },
+    td: { padding: '16px', borderBottom: '1px solid rgba(15, 23, 42, 0.08)', color: '#334155', fontSize: '14px' },
     approveBtn: { padding: '6px 12px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' },
     rejectBtn: { padding: '6px 12px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }
   };

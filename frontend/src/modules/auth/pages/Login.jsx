@@ -32,6 +32,15 @@ const Login = () => {
     if (res.success) {
       // Save user session
       localStorage.setItem('currentUser', JSON.stringify({ username: res.username, role: res.role }));
+      
+      // Auto-configure active employee ID context for tracking based on role
+      let defaultId = '2'; // default HR Priya Sharma
+      if (res.role === 'admin') defaultId = '1';
+      else if (res.role === 'hr') defaultId = '2';
+      else if (res.role === 'manager') defaultId = '3';
+      else if (res.role === 'employee') defaultId = '4';
+      localStorage.setItem('active_employee_id', defaultId);
+
       navigate('/'); // Route to dashboard
     } else {
       setError(res.message);

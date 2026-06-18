@@ -1,8 +1,16 @@
 import React from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 const PayrollLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => {
+    if (path === '/payroll') {
+      return location.pathname === '/payroll';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Consistent inline styling matching your other modules
   const styles = {
@@ -28,25 +36,37 @@ const PayrollLayout = () => {
       display: 'flex',
       gap: '10px',
       flexWrap: 'wrap'
-    },
-    navButton: {
-      backgroundColor: '#007bff',
-      color: '#ffffff',
-      border: 'none',
-      padding: '8px 16px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500',
-      transition: 'background-color 0.2s'
     }
   };
 
-  const handleMouseOver = (e) => e.target.style.backgroundColor = '#0056b3';
-  const handleMouseOut = (e) => e.target.style.backgroundColor = '#007bff';
-
   return (
     <div style={styles.container}>
+      <style>{`
+        .sub-nav-btn {
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          border: 1px solid transparent;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .sub-nav-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .sub-nav-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+      
       {/* Static Header & Navigation Buttons */}
       <div style={styles.headerWrapper}>
         <h1 style={styles.title}>Payroll Management</h1>
@@ -55,22 +75,22 @@ const PayrollLayout = () => {
         </p>
         
         <div style={styles.buttonContainer}>
-          <button style={styles.navButton} onClick={() => navigate('/payroll')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll') && !location.pathname.includes('/payslips') && !location.pathname.includes('/structure') && !location.pathname.includes('/taxes') && !location.pathname.includes('/bonus') && !location.pathname.includes('/reimbursements') ? 'active' : ''}`} onClick={() => navigate('/payroll')}>
             Run Payroll
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/payroll/payslips')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll/payslips') ? 'active' : ''}`} onClick={() => navigate('/payroll/payslips')}>
             My Payslips
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/payroll/structure')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll/structure') ? 'active' : ''}`} onClick={() => navigate('/payroll/structure')}>
             Salary Structure
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/payroll/taxes')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll/taxes') ? 'active' : ''}`} onClick={() => navigate('/payroll/taxes')}>
             Tax Details
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/payroll/bonus')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll/bonus') ? 'active' : ''}`} onClick={() => navigate('/payroll/bonus')}>
             Bonuses
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/payroll/reimbursements')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/payroll/reimbursements') ? 'active' : ''}`} onClick={() => navigate('/payroll/reimbursements')}>
             Reimbursements
           </button>
         </div>

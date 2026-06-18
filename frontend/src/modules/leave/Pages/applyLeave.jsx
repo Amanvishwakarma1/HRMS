@@ -13,7 +13,7 @@ const ApplyLeave = () => {
   });
 
   const styles = {
-    card: { padding: '24px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' },
+    card: { padding: '24px', maxWidth: '600px', margin: '0 auto', borderRadius: '16px' },
     formGroup: { marginBottom: '16px' },
     label: { display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' },
     input: { width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'inherit' },
@@ -40,7 +40,7 @@ const ApplyLeave = () => {
   };
 
   return (
-    <div style={styles.card}>
+    <div className="premium-card-bg" style={styles.card}>
       <h2 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>Apply for Leave</h2>
       <p style={{ color: '#666', marginBottom: '20px' }}>Submit a new time-off request for manager approval.</p>
       

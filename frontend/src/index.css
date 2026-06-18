@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
@@ -50,4 +48,36 @@ html, body, #root {
   border-radius: 12px;
   box-shadow: var(--shadow);
 }
->>>>>>> 077d9bac6d2e1f9ec4139220792812a0a3ab0c43
+
+/* Global metallic gradient override for all white background elements with glassmorphism and 3D effects */
+.bg-white, .premium-card-bg {
+  background: linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%) !important;
+  background-blend-mode: normal,color-burn !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.08), 0 8px 8px -6px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.bg-white:hover, .premium-card-bg:hover {
+  transform: translateY(-6px) scale(1.005);
+  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 12px 12px -8px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Tactile 3D button active state */
+.tactile-btn {
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
+}
+.tactile-btn:active {
+  transform: translateY(1.5px) scale(0.985);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 3D perspective context */
+.perspective-3d {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+

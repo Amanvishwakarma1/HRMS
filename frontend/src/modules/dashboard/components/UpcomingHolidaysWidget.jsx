@@ -2,13 +2,12 @@ import React from 'react';
 
 const UpcomingHolidaysWidget = () => {
   const styles = {
-    card: { padding: '20px', border: '1px solid #e5e7eb', borderRadius: '8px', backgroundColor: '#fff' },
-    title: { margin: '0 0 12px 0', fontSize: '18px', color: '#333' },
-    list: { paddingLeft: '20px', margin: 0, color: '#555' }
+    title: { margin: '0 0 12px 0', fontSize: '18px', color: '#0f172a', fontWeight: '700' },
+    list: { paddingLeft: '20px', margin: 0, color: '#475569', fontSize: '14px' }
   };
 
   return (
-    <div style={styles.card}>
+    <div>
       <h3 style={styles.title}>Upcoming Holidays</h3>
       <ul style={styles.list}>
         <li style={{ marginBottom: '8px' }}>Independence Day - Aug 15th</li>

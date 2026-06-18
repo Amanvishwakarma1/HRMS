@@ -1,9 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
+import HomeClockInOut from '../../attendance/components/HomeClockInOut';
+import ThreeDCard from '../../../components/ThreeDCard';
 
 const AdminDashboard = () => {
-  const navigate = useNavigate(); // 2. Initialize navigate
+  const navigate = useNavigate();
 
   const styles = {
     container: { padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' },
@@ -16,22 +18,20 @@ const AdminDashboard = () => {
       gap: '20px', 
       marginBottom: '24px' 
     },
-    sectionTitle: { fontSize: '18px', fontWeight: 'bold', color: '#374151', marginBottom: '16px' },
-    feedCard: { backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '20px' },
-    feedItem: { display: 'flex', alignItems: 'flex-start', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6', marginBottom: '16px' },
-    feedTime: { fontSize: '12px', color: '#9ca3af', minWidth: '60px' },
-    feedText: { margin: 0, fontSize: '14px', color: '#374151' },
-    // Added a reusable style for the action buttons
+    sectionTitle: { fontSize: '18px', fontWeight: 'bold', color: '#1e293b', marginBottom: '20px' },
+    feedItem: { display: 'flex', alignItems: 'flex-start', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid rgba(15, 23, 42, 0.08)', marginBottom: '16px' },
+    feedTime: { fontSize: '12px', color: '#64748b', minWidth: '60px', fontWeight: '600' },
+    feedText: { margin: 0, fontSize: '14px', color: '#334155', fontWeight: '500' },
     quickActionButton: {
-      padding: '12px', 
+      padding: '14px 20px', 
       textAlign: 'left', 
-      backgroundColor: '#fff', 
-      border: '1px solid #e5e7eb', 
-      borderRadius: '6px', 
+      background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.4) 0%, rgba(232, 235, 242, 0.4) 50%, rgba(226, 231, 237, 0.4) 100%)',
+      border: '1px solid rgba(15, 23, 42, 0.12)', 
+      borderRadius: '12px', 
       cursor: 'pointer', 
-      fontWeight: '500',
-      transition: 'border-color 0.2s',
-      color: '#374151'
+      fontWeight: '600',
+      transition: 'all 0.2s ease',
+      color: '#0f172a'
     }
   };
 
@@ -42,8 +42,16 @@ const AdminDashboard = () => {
     { id: 4, time: 'Yesterday', text: 'Payroll for September was successfully processed.' },
   ];
 
-  const handleHover = (e) => e.target.style.borderColor = '#007bff';
-  const handleHoverOut = (e) => e.target.style.borderColor = '#e5e7eb';
+  const handleHover = (e) => {
+    e.target.style.borderColor = '#0ea5e9';
+    e.target.style.backgroundColor = 'rgba(14, 165, 233, 0.08)';
+    e.target.style.transform = 'translateY(-2px)';
+  };
+  const handleHoverOut = (e) => {
+    e.target.style.borderColor = 'rgba(15, 23, 42, 0.12)';
+    e.target.style.backgroundColor = 'transparent';
+    e.target.style.transform = 'translateY(0)';
+  };
 
   return (
     <div style={styles.container}>
@@ -59,59 +67,80 @@ const AdminDashboard = () => {
         <StatCard title="Departments" value="8" trend="up" trendText="0%" color="#10b981" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+      {/* Clock In / Out telemetry widget */}
+      <div style={{ marginBottom: '24px' }}>
+        <HomeClockInOut />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
         
-        <div style={styles.feedCard}>
-          <h2 style={styles.sectionTitle}>Recent Activity</h2>
-          <div>
-            {recentActivity.map((activity, index) => (
-              <div key={activity.id} style={{
-                ...styles.feedItem, 
-                borderBottom: index === recentActivity.length - 1 ? 'none' : '1px solid #f3f4f6',
-                marginBottom: index === recentActivity.length - 1 ? '0' : '16px',
-                paddingBottom: index === recentActivity.length - 1 ? '0' : '16px'
-              }}>
-                <span style={styles.feedTime}>{activity.time}</span>
-                <p style={styles.feedText}>{activity.text}</p>
-              </div>
-            ))}
+        <ThreeDCard depth="20px" style={{ borderRadius: '20px' }}>
+          <div style={{ padding: '24px' }}>
+            <h2 style={styles.sectionTitle}>Recent Activity</h2>
+            <div>
+              {recentActivity.map((activity, index) => (
+                <div key={activity.id} style={{
+                  ...styles.feedItem, 
+                  borderBottom: index === recentActivity.length - 1 ? 'none' : '1px solid rgba(15, 23, 42, 0.08)',
+                  marginBottom: index === recentActivity.length - 1 ? '0' : '16px',
+                  paddingBottom: index === recentActivity.length - 1 ? '0' : '16px'
+                }}>
+                  <span style={styles.feedTime}>{activity.time}</span>
+                  <p style={styles.feedText}>{activity.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </ThreeDCard>
 
-        <div style={{ ...styles.feedCard, backgroundColor: '#f8fafc' }}>
-          <h2 style={styles.sectionTitle}>Quick Actions</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            
-            {/* 3. Wired up the buttons with onClick and the router paths */}
-            <button 
-              style={styles.quickActionButton} 
-              onClick={() => navigate('/employees/add')}
-              onMouseOver={handleHover}
-              onMouseOut={handleHoverOut}
-            >
-              + Add New Employee
-            </button>
+        <ThreeDCard depth="20px" style={{ borderRadius: '20px' }}>
+          <div style={{ padding: '24px' }}>
+            <h2 style={styles.sectionTitle}>Quick Actions</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              <button 
+                className="tactile-btn"
+                style={styles.quickActionButton} 
+                onClick={() => navigate('/employees/add')}
+                onMouseOver={handleHover}
+                onMouseOut={handleHoverOut}
+              >
+                + Add New Employee
+              </button>
 
-            <button 
-              style={styles.quickActionButton} 
-              onClick={() => navigate('/leave/approval')}
-              onMouseOver={handleHover}
-              onMouseOut={handleHoverOut}
-            >
-              ✓ Review Pending Leaves
-            </button>
+              <button 
+                className="tactile-btn"
+                style={styles.quickActionButton} 
+                onClick={() => navigate('/leave/approval')}
+                onMouseOver={handleHover}
+                onMouseOut={handleHoverOut}
+              >
+                ✓ Review Pending Leaves
+              </button>
 
-            <button 
-              style={styles.quickActionButton} 
-              onClick={() => navigate('/expenses/approvals')}
-              onMouseOver={handleHover}
-              onMouseOut={handleHoverOut}
-            >
-              $ Process Reimbursements
-            </button>
+              <button 
+                className="tactile-btn"
+                style={styles.quickActionButton} 
+                onClick={() => navigate('/expenses/approvals')}
+                onMouseOver={handleHover}
+                onMouseOut={handleHoverOut}
+              >
+                $ Process Reimbursements
+              </button>
 
+              <button 
+                className="tactile-btn"
+                style={styles.quickActionButton} 
+                onClick={() => navigate('/attendance/tracking')}
+                onMouseOver={handleHover}
+                onMouseOut={handleHoverOut}
+              >
+                🗺️ Trace All Employees on Map
+              </button>
+
+            </div>
           </div>
-        </div>
+        </ThreeDCard>
 
       </div>
     </div>

@@ -7,6 +7,9 @@ const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+  const isEmployee = currentUser.role === 'employee';
+
   // Fetch data when the component mounts
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -20,10 +23,10 @@ const EmployeeList = () => {
   }, []);
 
   const styles = {
-    card: { backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' },
+    card: { background: 'linear-gradient(to bottom, rgba(213, 222, 231, 0.75) 0%, rgba(232, 235, 242, 0.75) 50%, rgba(226, 231, 237, 0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%)', backgroundBlendMode: 'normal,color-burn', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' },
     table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-    th: { padding: '16px', backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb', color: '#4b5563', fontWeight: '600', fontSize: '14px' },
-    td: { padding: '16px', borderBottom: '1px solid #e5e7eb', color: '#374151', fontSize: '14px' },
+    th: { padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.05)', borderBottom: '2px solid rgba(15, 23, 42, 0.08)', color: '#0f172a', fontWeight: '700', fontSize: '14px' },
+    td: { padding: '16px', borderBottom: '1px solid rgba(15, 23, 42, 0.08)', color: '#334155', fontSize: '14px' },
     badgeActive: { padding: '4px 8px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '9999px', fontSize: '12px', fontWeight: 'bold' },
     badgeLeave: { padding: '4px 8px', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '9999px', fontSize: '12px', fontWeight: 'bold' }
   };
@@ -40,7 +43,7 @@ const EmployeeList = () => {
             <th style={styles.th}>Department</th>
             <th style={styles.th}>Designation</th>
             <th style={styles.th}>Status</th>
-            <th style={styles.th}>Actions</th>
+            {!isEmployee && <th style={styles.th}>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -58,14 +61,16 @@ const EmployeeList = () => {
                   {emp.status}
                 </span>
               </td>
-              <td style={styles.td}>
-                {/* Dynamically route to the edit page with the specific employee ID */}
-                <button 
-                  onClick={() => navigate(`/employees/edit/${emp.id}`)}
-                  style={{ color: '#007bff', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>
-                  Edit
-                </button>
-              </td>
+              {!isEmployee && (
+                <td style={styles.td}>
+                  {/* Dynamically route to the edit page with the specific employee ID */}
+                  <button 
+                    onClick={() => navigate(`/employees/edit/${emp.id}`)}
+                    style={{ color: '#0ea5e9', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
+                    Edit
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

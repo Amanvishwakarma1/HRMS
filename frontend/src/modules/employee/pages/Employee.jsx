@@ -1,8 +1,19 @@
 import React from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 const Employee = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'employee' };
+  const isEmployee = currentUser.role === 'employee';
+
+  const isActive = (path) => {
+    if (path === '/employees') {
+      return location.pathname === '/employees';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Consistent inline styling matching your Leave module
   const styles = {
@@ -28,25 +39,37 @@ const Employee = () => {
       display: 'flex',
       gap: '10px',
       flexWrap: 'wrap'
-    },
-    navButton: {
-      backgroundColor: '#007bff',
-      color: '#ffffff',
-      border: 'none',
-      padding: '8px 16px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500',
-      transition: 'background-color 0.2s'
     }
   };
 
-  const handleMouseOver = (e) => e.target.style.backgroundColor = '#0056b3';
-  const handleMouseOut = (e) => e.target.style.backgroundColor = '#007bff';
-
   return (
     <div style={styles.container}>
+      <style>{`
+        .sub-nav-btn {
+          background-color: rgba(15, 23, 42, 0.05);
+          color: #475569;
+          border: 1px solid transparent;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .sub-nav-btn:hover {
+          background-color: rgba(15, 23, 42, 0.08);
+          color: #0f172a;
+        }
+        .sub-nav-btn.active {
+          background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          color: #0f172a;
+          font-weight: 700;
+          border-color: rgba(15, 23, 42, 0.15);
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+      
       {/* Static Header & Navigation Buttons */}
       <div style={styles.headerWrapper}>
         <h1 style={styles.title}>Employee Management</h1>
@@ -56,23 +79,22 @@ const Employee = () => {
         
         <div style={styles.buttonContainer}>
           {/* These paths match the nested routes you set up in App.jsx */}
-          <button style={styles.navButton} onClick={() => navigate('/employees')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/employees') && !location.pathname.includes('/add') && !location.pathname.includes('/departments') && !location.pathname.includes('/designations') && !location.pathname.includes('/chart') && !location.pathname.includes('/edit') ? 'active' : ''}`} onClick={() => navigate('/employees')}>
             Employee List
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/employees/add')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-            Add Employee
-          </button>
-          <button style={styles.navButton} onClick={() => navigate('/employees/departments')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          {!isEmployee && (
+            <button className={`sub-nav-btn ${isActive('/employees/add') ? 'active' : ''}`} onClick={() => navigate('/employees/add')}>
+              Add Employee
+            </button>
+          )}
+          <button className={`sub-nav-btn ${isActive('/employees/departments') ? 'active' : ''}`} onClick={() => navigate('/employees/departments')}>
             Departments
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/employees/designations')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/employees/designations') ? 'active' : ''}`} onClick={() => navigate('/employees/designations')}>
             Designations
           </button>
-          <button style={styles.navButton} onClick={() => navigate('/employees/chart')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+          <button className={`sub-nav-btn ${isActive('/employees/chart') ? 'active' : ''}`} onClick={() => navigate('/employees/chart')}>
             Org Chart
-          </button>
-          <button style={styles.navButton} onClick={() => navigate('/employees/edit/:id')} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-            Edit Employee
           </button>
         </div>
       </div>
