@@ -1,35 +1,56 @@
 import React, { useState } from 'react';
 import { MapPin, ShieldAlert, ShieldCheck, Compass, Info } from 'lucide-react';
+import { useAttendance } from '../hooks/useAttendance';
+import { calculateDistance } from '../utils/CalculationDistance';
 
 const GeoFence = () => {
-  const locations = {
-    OfficeDesk: { name: 'Office Desk', lat: 12.97161, lng: 77.59461, distance: 12, inside: true },
-    OfficeEntrance: { name: 'Office Entrance', lat: 12.97210, lng: 77.59490, distance: 95, inside: true },
-    NearbyCafe: { name: 'Nearby Cafe', lat: 12.97450, lng: 77.59750, distance: 340, inside: false },
-    HomeRemote: { name: 'Home / Remote', lat: 13.05240, lng: 77.63210, distance: 12400, inside: false }
-  };
+  const { officeConfig } = useAttendance();
+  const officeLat = officeConfig?.lat || 28.6282;
+  const officeLng = officeConfig?.lng || 77.3898;
+  const fenceRadius = officeConfig?.radius || 200;
+
+  const locations = React.useMemo(() => {
+    const coords = {
+      OfficeDesk: { name: 'Office Desk', lat: officeLat + 0.00005, lng: officeLng + 0.00005 },
+      OfficeEntrance: { name: 'Office Entrance', lat: officeLat + 0.0008, lng: officeLng + 0.0008 },
+      NearbyCafe: { name: 'Nearby Cafe', lat: officeLat + 0.0028, lng: officeLng + 0.0028 },
+      HomeRemote: { name: 'Home / Remote', lat: officeLat + 0.1, lng: officeLng + 0.1 }
+    };
+
+    const result = {};
+    for (const key in coords) {
+      const dist = Math.round(calculateDistance(coords[key].lat, coords[key].lng, officeLat, officeLng));
+      result[key] = {
+        name: coords[key].name,
+        lat: coords[key].lat,
+        lng: coords[key].lng,
+        distance: dist,
+        inside: dist <= fenceRadius
+      };
+    }
+    return result;
+  }, [officeLat, officeLng, fenceRadius]);
 
   const [simulationMode, setSimulationMode] = useState(() => {
     return localStorage.getItem('hrms_simulated_location_mode') || 'OfficeDesk';
   });
 
+  const activeLoc = locations[simulationMode] || locations.OfficeDesk;
+
   React.useEffect(() => {
-    // Seed initial coordinates if not present
-    if (!localStorage.getItem('hrms_simulated_gps_coords')) {
-      localStorage.setItem('hrms_simulated_gps_coords', JSON.stringify(locations.OfficeDesk));
+    if (activeLoc) {
+      localStorage.setItem('hrms_simulated_gps_coords', JSON.stringify({ lat: activeLoc.lat, lng: activeLoc.lng }));
     }
-  }, []);
+  }, [activeLoc]);
 
   const handleSimulate = (key) => {
     setSimulationMode(key);
     localStorage.setItem('hrms_simulated_location_mode', key);
-    localStorage.setItem('hrms_simulated_gps_coords', JSON.stringify(locations[key]));
+    if (locations[key]) {
+      localStorage.setItem('hrms_simulated_gps_coords', JSON.stringify({ lat: locations[key].lat, lng: locations[key].lng }));
+    }
+    window.dispatchEvent(new Event('location_change'));
   };
-
-  const activeLoc = locations[simulationMode];
-  const officeLat = 12.97160;
-  const officeLng = 77.59460;
-  const fenceRadius = 200; // meters
 
   // Map employee position to SVG space
   // SVG center is (150, 150) - representing the office
@@ -199,7 +220,7 @@ const GeoFence = () => {
               <button
                 key={key}
                 style={styles.simBtn(simulationMode === key)}
-                onClick={() => setSimulationMode(key)}
+                onClick={() => handleSimulate(key)}
               >
                 <span>{locations[key].name}</span>
                 <span style={{ fontSize: '11px', opacity: 0.8 }}>

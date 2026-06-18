@@ -13,6 +13,7 @@ import Departments from "./modules/employee/pages/Departments";
 import Designations from "./modules/employee/pages/Designations";
 import OrganizationChart from "./modules/employee/pages/OrganizationChart";
 import EditEmployee from "./modules/employee/pages/EditEmployee";
+import EmployeeProfile from "./modules/employee/pages/EmployeeProfile";
 
 // Leave Module
 import LeaveLayout from "./modules/leave/Pages/LeaveLayout";
@@ -110,6 +111,7 @@ function App() {
             <Route path="designations" element={<Designations />} />
             <Route path="chart" element={<OrganizationChart />} />
             <Route path="edit/:id" element={<EditEmployee />} />
+            <Route path="profile/:id" element={<EmployeeProfile />} />
           </Route>
           
           {/* 5. My Finance / Payroll & Expenses */}

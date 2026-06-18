@@ -51,7 +51,16 @@ const EmployeeList = () => {
             <tr key={emp.id}>
               <td style={styles.td}><strong>{emp.id}</strong></td>
               <td style={styles.td}>
-                <div>{emp.name}</div>
+                {!isEmployee ? (
+                  <button
+                    onClick={() => navigate(`/employees/profile/${emp.id}`)}
+                    style={{ background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', fontWeight: '700', padding: 0, textAlign: 'left', fontSize: '14px', textDecoration: 'underline' }}
+                  >
+                    {emp.name}
+                  </button>
+                ) : (
+                  <div>{emp.name}</div>
+                )}
                 <div style={{ color: '#6b7280', fontSize: '12px' }}>{emp.email}</div>
               </td>
               <td style={styles.td}>{emp.department}</td>

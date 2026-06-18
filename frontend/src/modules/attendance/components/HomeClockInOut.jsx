@@ -89,16 +89,14 @@ export const HomeClockInOut = () => {
 
   // Track browser geolocation & check geofence distance
   useEffect(() => {
-    if (!navigator.geolocation) return;
-
     const officeLat = officeConfig?.lat || 28.6282;
     const officeLng = officeConfig?.lng || 77.3898;
     const allowedRadius = officeConfig?.radius || 200;
 
-    const geoId = navigator.geolocation.watchPosition(
+    const watchObj = locationService.watchPosition(
       (pos) => {
-        const uLat = pos.coords.latitude;
-        const uLng = pos.coords.longitude;
+        const uLat = pos.lat;
+        const uLng = pos.lng;
         setUserLoc({ lat: uLat, lng: uLng });
 
         const dist = calculateDistance(uLat, uLng, officeLat, officeLng);
@@ -110,11 +108,14 @@ export const HomeClockInOut = () => {
         setError("GPS Coordinates Unavailable. Please grant location permissions.");
         // Dev fallback: lock inside geofence if permission is blocked in simulation
         setIsInsideGeofence(true);
-      },
-      { enableHighAccuracy: true, maximumAge: 10000 }
+      }
     );
 
-    return () => navigator.geolocation.clearWatch(geoId);
+    return () => {
+      if (watchObj) {
+        locationService.clearWatch(watchObj);
+      }
+    };
   }, [officeConfig]);
 
   // Handle active shift effort clock timer
