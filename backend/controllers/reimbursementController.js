@@ -5,7 +5,7 @@ import { AuditLog } from '../models/AuditLog.js';
 export const createReimbursement = async (req, res) => {
   try {
     const { amount, category, month, description, billUrl } = req.body;
-    const employeeId = req.user?.id || 4; // fall back to employee if not signed in
+    const employeeId = req.user.id;
 
     if (!amount || !category || !month) {
       return res.status(400).json({ success: false, message: 'Amount, category, and month are required.' });
@@ -17,9 +17,9 @@ export const createReimbursement = async (req, res) => {
 
     await AuditLog.create({
       action: 'Submit Reimbursement',
-      userId: req.user?.id || 4,
-      username: req.user?.username || 'employee',
-      role: req.user?.role || 'employee',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: '',
       newValue: JSON.stringify(reimbursement.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -69,9 +69,9 @@ export const approveReimbursement = async (req, res) => {
 
     await AuditLog.create({
       action: `${status} Reimbursement`,
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(claim.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -95,9 +95,9 @@ export const deleteReimbursement = async (req, res) => {
 
     await AuditLog.create({
       action: 'Delete Reimbursement',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: '',
       ipAddress: req.ip || '127.0.0.1'

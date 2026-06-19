@@ -6,7 +6,7 @@ import { SalaryStructure } from '../models/SalaryStructure.js';
 export const createTaxDeclaration = async (req, res) => {
   try {
     const { financialYear, category, amount, proofUrl } = req.body;
-    const employeeId = req.user?.id || 4; // fall back to employee if not signed in
+    const employeeId = req.user.id;
 
     if (!financialYear || !category || !amount) {
       return res.status(400).json({ success: false, message: 'Financial year, category, and amount are required.' });
@@ -18,9 +18,9 @@ export const createTaxDeclaration = async (req, res) => {
 
     await AuditLog.create({
       action: 'Submit Tax Declaration',
-      userId: req.user?.id || 4,
-      username: req.user?.username || 'employee',
-      role: req.user?.role || 'employee',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: '',
       newValue: JSON.stringify(dec.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -69,9 +69,9 @@ export const approveTaxDeclaration = async (req, res) => {
 
     await AuditLog.create({
       action: `${status} Tax Declaration`,
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(dec.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -193,9 +193,9 @@ export const deleteTaxDeclaration = async (req, res) => {
 
     await AuditLog.create({
       action: 'Delete Tax Declaration',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: '',
       ipAddress: req.ip || '127.0.0.1'

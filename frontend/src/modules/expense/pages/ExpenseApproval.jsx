@@ -591,12 +591,12 @@ function ExpenseApproval() {
                             {isImg && (
                               <div className="w-full h-24 rounded-lg bg-slate-200 overflow-hidden relative border border-slate-100 group">
                                 <img 
-                                  src={`http://localhost:5000${rc.fileUrl}`} 
+                                  src={`${import.meta.env.VITE_ENVIRONMENT === 'production' ? '' : 'http://localhost:5000'}${rc.fileUrl}`} 
                                   alt="receipt" 
                                   className="w-full h-full object-cover"
                                 />
                                 <div 
-                                  onClick={() => setZoomReceiptUrl(`http://localhost:5000${rc.fileUrl}`)}
+                                  onClick={() => setZoomReceiptUrl(`${import.meta.env.VITE_ENVIRONMENT === 'production' ? '' : 'http://localhost:5000'}${rc.fileUrl}`)}
                                   className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-white"
                                 >
                                   <ZoomIn className="w-5 h-5" />
@@ -607,7 +607,7 @@ function ExpenseApproval() {
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
                               <span>{(rc.fileSize / 1024).toFixed(1)} KB</span>
                               <a 
-                                href={`http://localhost:5000${rc.fileUrl}`}
+                                href={`${import.meta.env.VITE_ENVIRONMENT === 'production' ? '' : 'http://localhost:5000'}${rc.fileUrl}`}
                                 download={rc.filename}
                                 target="_blank"
                                 rel="noreferrer"

@@ -10,7 +10,7 @@ import { ExpenseComment } from '../models/ExpenseComment.js';
 import { Reimbursement } from '../models/Reimbursement.js';
 import { Employee } from '../models/Employee.js';
 import { AuditLog } from '../models/AuditLog.js';
-import { readData, writeData } from '../db.js';
+import { Notification } from '../models/Notification.js';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -20,11 +20,12 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 // Helper: Log audit trail entries
 const logAudit = async (req, action, oldValue = '', newValue = '') => {
   try {
+    if (!req.user) return;
     await AuditLog.create({
       action,
-      userId: req.user?.id || 4,
-      username: req.user?.username || 'employee',
-      role: req.user?.role || 'employee',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: typeof oldValue === 'object' ? JSON.stringify(oldValue) : String(oldValue),
       newValue: typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue),
       ipAddress: req.ip || '127.0.0.1'
@@ -344,19 +345,15 @@ export const submitExpenseClaim = async (req, res) => {
 };
 
 // Notification Helper
-const sendNotification = (userId, type, title, message) => {
+const sendNotification = async (userId, type, title, message) => {
   try {
-    const db = readData();
-    db.notifications.unshift({
-      id: String(Date.now()) + Math.random().toString(36).substring(2, 5),
-      userId: userId ? Number(userId) : null,
+    await Notification.create({
+      employeeId: userId ? Number(userId) : null,
       type: type || 'info',
       title,
       message,
-      time: 'Just now',
       isRead: false
     });
-    writeData(db);
   } catch (err) {
     console.error('Failed to trigger notification:', err.message);
   }
@@ -501,12 +498,13 @@ export const requestInformation = async (req, res) => {
     });
 
     // Notify Employee
-    sendNotification(expense.employeeId, 'warning', 'More Information Needed on Expense', `HR has requested clarification on EXP-${expense.id}: "${message}"`);
+    await sendNotification(expense.employeeId, 'warning', 'More Information Needed on Expense', `HR has requested clarification on EXP-${expense.id}: "${message}"`);
 
     await logAudit(req, 'Request More Information', { status: oldStatus }, { status: 'Need Information', requestMessage: message });
 
     res.status(200).json({ success: true, data: expense, message: 'Information request submitted.' });
   } catch (error) {
+    console.error("Error requesting information:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -569,12 +567,13 @@ export const resubmitExpense = async (req, res) => {
     });
 
     // Notify HR
-    sendNotification(null, 'info', 'Expense Resubmitted', `${req.user.username} has resubmitted claim EXP-${expense.id} with updates.`);
+    await sendNotification(null, 'info', 'Expense Resubmitted', `${req.user.username} has resubmitted claim EXP-${expense.id} with updates.`);
 
     await logAudit(req, 'Resubmit Expense', { status: oldStatus }, { status: 'Resubmitted' });
 
     res.status(200).json({ success: true, data: expense, message: 'Expense claim successfully resubmitted.' });
   } catch (error) {
+    console.error("Error resubmitting expense:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -633,10 +632,10 @@ export const approveExpense = async (req, res) => {
 
     // Notifications and Reimbursement records
     if (nextStatus === 'HR Approved') {
-      sendNotification(expense.employeeId, 'success', 'Expense HR Approved', `Your claim EXP-${expense.id} was approved by HR and sent to Finance.`);
-      sendNotification(null, 'info', 'New Claim Pending Finance Verification', `Claim EXP-${expense.id} has been approved by HR and is pending your review.`);
+      await sendNotification(expense.employeeId, 'success', 'Expense HR Approved', `Your claim EXP-${expense.id} was approved by HR and sent to Finance.`);
+      await sendNotification(null, 'info', 'New Claim Pending Finance Verification', `Claim EXP-${expense.id} has been approved by HR and is pending your review.`);
     } else if (nextStatus === 'Finance Approved') {
-      sendNotification(expense.employeeId, 'success', 'Expense Finance Approved', `Your claim EXP-${expense.id} was approved by Finance.`);
+      await sendNotification(expense.employeeId, 'success', 'Expense Finance Approved', `Your claim EXP-${expense.id} was approved by Finance.`);
       
       // Auto create Reimbursement entry
       const finalApprovedAmount = approvedAmount !== undefined ? Number(approvedAmount) : expense.amount;
@@ -717,7 +716,7 @@ export const rejectExpense = async (req, res) => {
     });
 
     // Notify Employee
-    sendNotification(expense.employeeId, 'error', 'Expense Rejected', `Your expense claim EXP-${expense.id} was rejected. Reason: ${finalReason}`);
+    await sendNotification(expense.employeeId, 'error', 'Expense Rejected', `Your expense claim EXP-${expense.id} was rejected. Reason: ${finalReason}`);
 
     await logAudit(req, 'Reject Expense', { status: oldStatus }, { status: 'Rejected', rejectionReason: finalReason });
 
@@ -784,10 +783,10 @@ export const bulkApprove = async (req, res) => {
         });
 
         if (nextStatus === 'HR Approved') {
-          sendNotification(expense.employeeId, 'success', 'Expense HR Approved', `Your claim EXP-${expense.id} was approved by HR (Bulk).`);
-          sendNotification(null, 'info', 'New Claim Pending Finance Verification', `Claim EXP-${expense.id} approved by HR (Bulk).`);
+          await sendNotification(expense.employeeId, 'success', 'Expense HR Approved', `Your claim EXP-${expense.id} was approved by HR (Bulk).`);
+          await sendNotification(null, 'info', 'New Claim Pending Finance Verification', `Claim EXP-${expense.id} approved by HR (Bulk).`);
         } else if (nextStatus === 'Finance Approved') {
-          sendNotification(expense.employeeId, 'success', 'Expense Finance Approved', `Your claim EXP-${expense.id} was approved by Finance (Bulk).`);
+          await sendNotification(expense.employeeId, 'success', 'Expense Finance Approved', `Your claim EXP-${expense.id} was approved by Finance (Bulk).`);
           
           const finalApprovedAmount = expense.amount;
           const monthStr = new Date(expense.expenseDate).toISOString().slice(0, 7);
@@ -877,7 +876,7 @@ export const bulkReject = async (req, res) => {
           comment: `Rejected in Bulk: ${finalReason}`
         });
 
-        sendNotification(expense.employeeId, 'error', 'Expense Rejected', `Your expense claim EXP-${expense.id} was rejected (Bulk). Reason: ${finalReason}`);
+        await sendNotification(expense.employeeId, 'error', 'Expense Rejected', `Your expense claim EXP-${expense.id} was rejected (Bulk). Reason: ${finalReason}`);
 
         await logAudit(req, 'Bulk Reject Expense', { status: oldStatus }, { status: 'Rejected', rejectionReason: finalReason });
         updated.push(id);

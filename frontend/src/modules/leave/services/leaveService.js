@@ -37,9 +37,13 @@ export const leaveService = {
     }
   },
 
-  updateLeaveStatus: async (id, newStatus) => {
+  updateLeaveStatus: async (id, newStatus, rejectionReason = '', requestMessage = '') => {
     try {
-      const response = await axios.put(`/api/leaves/${id}`, { status: newStatus });
+      const response = await axios.put(`/api/leaves/${id}`, { 
+        status: newStatus, 
+        rejectionReason,
+        requestMessage
+      });
       return response.data;
     } catch (error) {
       return { success: false, message: 'Failed to update leave status' };

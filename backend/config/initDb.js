@@ -91,6 +91,11 @@ export const initializeExpenseDatabase = async () => {
       ALTER TABLE expenses ADD COLUMN IF NOT EXISTS request_message TEXT;
       ALTER TABLE employees ADD COLUMN IF NOT EXISTS manager_id INTEGER;
       ALTER TABLE employees ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';
+      ALTER TABLE employees ADD COLUMN IF NOT EXISTS gender VARCHAR(50) DEFAULT 'Male';
+      ALTER TABLE employees ADD COLUMN IF NOT EXISTS employment_type VARCHAR(50) DEFAULT 'Permanent';
+      ALTER TABLE employees ADD COLUMN IF NOT EXISTS tracking_enabled BOOLEAN DEFAULT true;
+      ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+      ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS request_message TEXT;
     `);
 
     // 7. Create leave_requests, notifications, and regularizations tables
@@ -134,6 +139,69 @@ export const initializeExpenseDatabase = async () => {
         status VARCHAR(50) DEFAULT 'Pending',
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 7b. Create Job Openings, Applicants, Onboarding, and Announcements tables
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS job_openings (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        department VARCHAR(255) NOT NULL,
+        status VARCHAR(50) DEFAULT 'Active',
+        vacancy_count INTEGER DEFAULT 1,
+        description TEXT,
+        created_by INTEGER,
+        updated_by INTEGER,
+        "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "deletedAt" TIMESTAMP WITH TIME ZONE
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS applicants (
+        id SERIAL PRIMARY KEY,
+        job_opening_id INTEGER REFERENCES job_openings(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        status VARCHAR(50) DEFAULT 'Applied',
+        resume_url TEXT,
+        "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "deletedAt" TIMESTAMP WITH TIME ZONE
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS onboarding (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER REFERENCES employees(id) ON DELETE CASCADE,
+        status VARCHAR(100) DEFAULT 'Document Pending',
+        onboarding_period_days INTEGER DEFAULT 30,
+        verified_at TIMESTAMP WITH TIME ZONE,
+        training_completed_at TIMESTAMP WITH TIME ZONE,
+        "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "deletedAt" TIMESTAMP WITH TIME ZONE
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        priority VARCHAR(50) DEFAULT 'Low',
+        target_audience VARCHAR(100) DEFAULT 'All',
+        target_id VARCHAR(255),
+        expiry_date TIMESTAMP WITH TIME ZONE,
+        created_by INTEGER,
+        updated_by INTEGER,
+        "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        "deletedAt" TIMESTAMP WITH TIME ZONE
       );
     `);
 

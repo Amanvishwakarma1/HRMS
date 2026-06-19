@@ -17,5 +17,8 @@ export const Employee = sequelize.define('Employee', {
   pfNumber: { type: DataTypes.STRING, field: 'pf_number' },
   joinDate: { type: DataTypes.DATEONLY, field: 'join_date' },
   managerId: { type: DataTypes.INTEGER, field: 'manager_id' },
-  status: { type: DataTypes.STRING, defaultValue: 'Active' }
+  status: { type: DataTypes.STRING, defaultValue: 'Active' },
+  gender: { type: DataTypes.STRING, defaultValue: 'Male' },
+  employmentType: { type: DataTypes.STRING, field: 'employment_type', defaultValue: 'Permanent' },
+  trackingEnabled: { type: DataTypes.BOOLEAN, field: 'tracking_enabled', defaultValue: true }
 }, { tableName: 'employees', timestamps: false });

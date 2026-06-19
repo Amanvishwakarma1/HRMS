@@ -459,7 +459,7 @@ function ExpenseHistory() {
                           <span className="text-slate-600 font-semibold truncate">{rc.filename}</span>
                         </div>
                         <a 
-                          href={`http://localhost:5000${rc.fileUrl}`} 
+                          href={`${import.meta.env.VITE_ENVIRONMENT === 'production' ? '' : 'http://localhost:5000'}${rc.fileUrl}`} 
                           target="_blank" 
                           rel="noreferrer" 
                           className="flex items-center gap-1 text-[11px] font-bold text-sky-600 hover:text-sky-800"

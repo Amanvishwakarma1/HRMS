@@ -47,7 +47,7 @@ export const runPayroll = async (req, res) => {
     const run = await PayrollRun.create({
       month,
       status: 'Draft',
-      processedBy: req.user?.username || 'admin',
+      processedBy: req.user.username,
       runDate: new Date()
     }, { transaction });
 
@@ -166,9 +166,9 @@ export const runPayroll = async (req, res) => {
 
     await AuditLog.create({
       action: 'Run Payroll',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: '',
       newValue: JSON.stringify(run.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -236,9 +236,9 @@ export const approvePayroll = async (req, res) => {
 
     await AuditLog.create({
       action: 'Approve Payroll',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(run.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -268,9 +268,9 @@ export const markPaid = async (req, res) => {
 
     await AuditLog.create({
       action: 'Pay Salaries',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'finance',
-      role: req.user?.role || 'finance',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(run.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -299,9 +299,9 @@ export const reopenPayroll = async (req, res) => {
 
     await AuditLog.create({
       action: 'Reopen Payroll',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(run.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'

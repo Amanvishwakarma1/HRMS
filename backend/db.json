@@ -45,7 +45,7 @@
       "startDate": "2026-06-20",
       "endDate": "2026-06-22",
       "reason": "Medical appointment and recovery",
-      "status": "Pending",
+      "status": "Approved",
       "appliedOn": "2026-06-15"
     },
     {
@@ -508,6 +508,213 @@
     }
   ],
   "notifications": [
+    {
+      "id": "1781844266626sk8",
+      "userId": 4,
+      "type": "success",
+      "title": "Expense Finance Approved",
+      "message": "Your claim EXP-26 was approved by Finance.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781844265473x6y",
+      "userId": null,
+      "type": "info",
+      "title": "New Claim Pending Finance Verification",
+      "message": "Claim EXP-26 has been approved by HR and is pending your review.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781844265471fys",
+      "userId": 4,
+      "type": "success",
+      "title": "Expense HR Approved",
+      "message": "Your claim EXP-26 was approved by HR and sent to Finance.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781844264315nbi",
+      "userId": null,
+      "type": "info",
+      "title": "Expense Resubmitted",
+      "message": "QA Specialist has resubmitted claim EXP-26 with updates.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781844263148exh",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-26: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781844173704cg2",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-25: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818439657378tj",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-24: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818438682838ef",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-23: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843758048zr1",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-22: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818436767069zh",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-21: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818436322022cf",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-20: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818435957414yi",
+      "userId": null,
+      "type": "info",
+      "title": "Expense Resubmitted",
+      "message": "QA Specialist has resubmitted claim EXP-19 with updates.",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "17818435590261xj",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-18: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843391956wgp",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-17: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843268576el1",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-16: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843228638arz",
+      "userId": 4,
+      "type": "warning",
+      "title": "Test Title",
+      "message": "Test Message",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843188173e3u",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-15: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781843056357hqh",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-14: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781842877814irw",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-13: \"Please upload receipt\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781842821998iag",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-12: \"Please provide a valid receipt upload and confirm project code details.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781842759333qb3",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-11: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781842579792yr9",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-10: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
+    {
+      "id": "1781842524963a24",
+      "userId": 4,
+      "type": "warning",
+      "title": "More Information Needed on Expense",
+      "message": "HR has requested clarification on EXP-9: \"Please provide a valid receipt upload.\"",
+      "time": "Just now",
+      "isRead": false
+    },
     {
       "id": "1781779760344kqc",
       "userId": 4,

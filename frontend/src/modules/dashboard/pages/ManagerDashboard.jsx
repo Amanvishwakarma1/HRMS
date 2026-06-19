@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import StatCard from '../components/StatCard';
 import HomeClockInOut from '../../attendance/components/HomeClockInOut';
 import ThreeDCard from '../../../components/ThreeDCard';
 
 const ManagerDashboard = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    teamSize: 0,
+    teamLeavesToday: 0,
+    pendingApprovalsCount: 0,
+    teamRequests: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('/api/dashboard/manager-stats')
+      .then(res => {
+        if (res.data && res.data.success) {
+          setStats(res.data.data);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Error loading manager stats:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const styles = {
     container: { padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' },
@@ -25,9 +47,9 @@ const ManagerDashboard = () => {
       </div>
 
       <div style={styles.grid}>
-        <StatCard title="Team Size" value="12" trend="up" trendText="0%" color="#3b82f6" />
-        <StatCard title="Team on Leave Today" value="2" trend="down" trendText="" color="#ef4444" />
-        <StatCard title="Pending Approvals" value="5" trend="up" trendText="2" color="#f59e0b" />
+        <StatCard title="Team Size" value={stats.teamSize} trend="up" trendText="Live" color="#3b82f6" />
+        <StatCard title="Team on Leave Today" value={stats.teamLeavesToday} trend="down" trendText="" color="#ef4444" />
+        <StatCard title="Pending Approvals" value={stats.pendingApprovalsCount} trend="up" trendText="Live" color="#f59e0b" />
       </div>
 
       {/* Clock In / Out telemetry widget */}
@@ -40,20 +62,22 @@ const ManagerDashboard = () => {
         <ThreeDCard depth="20px" style={{ borderRadius: '20px' }}>
           <div style={{ padding: '24px' }}>
             <h2 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700', color: '#1e293b' }}>Action Required: Team Requests</h2>
-            <div style={styles.listItem}>
-              <div>
-                <strong style={{ color: '#0f172a' }}>Alice Smith</strong>
-                <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>Sick Leave (2 Days)</p>
-              </div>
-              <button className="tactile-btn" style={styles.actionBtn} onClick={() => navigate('/leave/approval')}>Review</button>
-            </div>
-            <div style={{ ...styles.listItem, borderBottom: 'none' }}>
-              <div>
-                <strong style={{ color: '#0f172a' }}>Charlie Davis</strong>
-                <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>Client Dinner Expense (₹2,500)</p>
-              </div>
-              <button className="tactile-btn" style={styles.actionBtn} onClick={() => navigate('/expenses/approvals')}>Review</button>
-            </div>
+            {stats.teamRequests && stats.teamRequests.length > 0 ? (
+              stats.teamRequests.map((req, index) => (
+                <div key={req.id} style={{ 
+                  ...styles.listItem, 
+                  borderBottom: index === stats.teamRequests.length - 1 ? 'none' : '1px solid rgba(15, 23, 42, 0.08)' 
+                }}>
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>{req.name}</strong>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{req.type}</p>
+                  </div>
+                  <button className="tactile-btn" style={styles.actionBtn} onClick={() => navigate(req.actionPath)}>Review</button>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: '#666', fontSize: '14px' }}>No pending team requests.</p>
+            )}
           </div>
         </ThreeDCard>
 

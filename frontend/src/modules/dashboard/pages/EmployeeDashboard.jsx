@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Calendar, Receipt, FileText, ArrowRight } from 'lucide-react';
 
 // Importing your specific modules
@@ -11,6 +12,17 @@ import ThreeDCard from '../../../components/ThreeDCard';
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("currentUser")) || { username: "User" };
+  const [leaveBalance, setLeaveBalance] = useState(12);
+
+  useEffect(() => {
+    axios.get('/api/leaves/balance')
+      .then(res => {
+        if (res.data && res.data.success) {
+          setLeaveBalance(res.data.balance);
+        }
+      })
+      .catch(err => console.error("Error loading leave balance:", err));
+  }, []);
 
   const styles = {
     container: { padding: '0 0 40px 0', maxWidth: '1200px', margin: '0 auto', background: 'transparent', fontFamily: 'Inter, system-ui, sans-serif' },
@@ -112,7 +124,7 @@ const EmployeeDashboard = () => {
         {/* Leave Balance Widget */}
         <ThreeDCard depth="25px" style={{ borderRadius: '24px' }}>
           <div style={{ padding: '28px', height: '100%' }}>
-            <LeaveBalanceWidget balance={12} /> 
+            <LeaveBalanceWidget balance={leaveBalance} /> 
           </div>
         </ThreeDCard>
         

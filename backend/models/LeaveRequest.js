@@ -9,6 +9,8 @@ export const LeaveRequest = sequelize.define('LeaveRequest', {
   startDate: { type: DataTypes.DATEONLY, field: 'start_date', allowNull: false },
   endDate: { type: DataTypes.DATEONLY, field: 'end_date', allowNull: false },
   reason: { type: DataTypes.TEXT, allowNull: false },
-  status: { type: DataTypes.STRING, defaultValue: 'Pending' }, // 'Pending', 'Approved', 'Rejected'
-  approvedBy: { type: DataTypes.INTEGER, field: 'approved_by', references: { model: Employee, key: 'id' } }
+  status: { type: DataTypes.STRING, defaultValue: 'Pending' }, // 'Pending', 'Approved', 'Rejected', 'Need Information', 'Cancelled'
+  approvedBy: { type: DataTypes.INTEGER, field: 'approved_by', references: { model: Employee, key: 'id' } },
+  rejectionReason: { type: DataTypes.TEXT, field: 'rejection_reason' },
+  requestMessage: { type: DataTypes.TEXT, field: 'request_message' }
 }, { tableName: 'leave_requests', timestamps: true });

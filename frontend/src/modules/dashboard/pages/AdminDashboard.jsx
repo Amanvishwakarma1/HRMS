@@ -1,11 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import StatCard from '../components/StatCard';
 import HomeClockInOut from '../../attendance/components/HomeClockInOut';
 import ThreeDCard from '../../../components/ThreeDCard';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalEmployees: 0,
+    pendingLeaves: 0,
+    pendingExpensesSum: 0,
+    departmentsCount: 1,
+    recentActivity: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('/api/dashboard/stats')
+      .then(res => {
+        if (res.data && res.data.success) {
+          setStats(res.data.data);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Error loading admin stats:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const styles = {
     container: { padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' },
@@ -35,12 +58,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const recentActivity = [
-    { id: 1, time: '10:42 AM', text: 'Alice Smith submitted a Leave Request for Oct 15-18.' },
-    { id: 2, time: '09:15 AM', text: 'Bob Johnson uploaded a new Expense Receipt (₹4,500).' },
-    { id: 3, time: 'Yesterday', text: 'New employee Charlie Davis was added to the Sales department.' },
-    { id: 4, time: 'Yesterday', text: 'Payroll for September was successfully processed.' },
-  ];
+
 
   const handleHover = (e) => {
     e.target.style.borderColor = '#0ea5e9';
@@ -61,10 +79,10 @@ const AdminDashboard = () => {
       </div>
 
       <div style={styles.grid}>
-        <StatCard title="Total Employees" value="142" trend="up" trendText="4%" color="#3b82f6" />
-        <StatCard title="Active Leave Requests" value="12" trend="up" trendText="15%" color="#f59e0b" />
-        <StatCard title="Pending Expenses" value="₹24,500" trend="down" trendText="8%" color="#ef4444" />
-        <StatCard title="Departments" value="8" trend="up" trendText="0%" color="#10b981" />
+        <StatCard title="Total Employees" value={stats.totalEmployees} trend="up" trendText="Live" color="#3b82f6" />
+        <StatCard title="Active Leave Requests" value={stats.pendingLeaves} trend="up" trendText="Live" color="#f59e0b" />
+        <StatCard title="Pending Expenses" value={`₹${stats.pendingExpensesSum.toLocaleString()}`} trend="down" trendText="Live" color="#ef4444" />
+        <StatCard title="Departments" value={stats.departmentsCount} trend="up" trendText="Live" color="#10b981" />
       </div>
 
       {/* Clock In / Out telemetry widget */}
@@ -78,17 +96,21 @@ const AdminDashboard = () => {
           <div style={{ padding: '24px' }}>
             <h2 style={styles.sectionTitle}>Recent Activity</h2>
             <div>
-              {recentActivity.map((activity, index) => (
-                <div key={activity.id} style={{
-                  ...styles.feedItem, 
-                  borderBottom: index === recentActivity.length - 1 ? 'none' : '1px solid rgba(15, 23, 42, 0.08)',
-                  marginBottom: index === recentActivity.length - 1 ? '0' : '16px',
-                  paddingBottom: index === recentActivity.length - 1 ? '0' : '16px'
-                }}>
-                  <span style={styles.feedTime}>{activity.time}</span>
-                  <p style={styles.feedText}>{activity.text}</p>
-                </div>
-              ))}
+              {stats.recentActivity && stats.recentActivity.length > 0 ? (
+                stats.recentActivity.map((activity, index) => (
+                  <div key={activity.id} style={{
+                    ...styles.feedItem, 
+                    borderBottom: index === stats.recentActivity.length - 1 ? 'none' : '1px solid rgba(15, 23, 42, 0.08)',
+                    marginBottom: index === stats.recentActivity.length - 1 ? '0' : '16px',
+                    paddingBottom: index === stats.recentActivity.length - 1 ? '0' : '16px'
+                  }}>
+                    <span style={styles.feedTime}>{activity.time}</span>
+                    <p style={styles.feedText}>{activity.text}</p>
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: '#666', fontSize: '14px' }}>No recent activity.</p>
+              )}
             </div>
           </div>
         </ThreeDCard>

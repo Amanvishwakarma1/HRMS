@@ -4,6 +4,9 @@ import DashboardLayout from "./layouts/DashboardLayout";
 
 // Core Dashboard Router
 import DashboardRouter from "./modules/dashboard/DashboardRouter";
+import JobOpenings from "./modules/dashboard/pages/JobOpenings";
+import Onboarding from "./modules/dashboard/pages/Onboarding";
+import HeadcountAnalytics from "./modules/dashboard/pages/HeadcountAnalytics";
 
 // Employee Module
 import Employee from "./modules/employee/pages/Employee";
@@ -73,7 +76,9 @@ function App() {
         <Route path="/" element={<DashboardLayout />}>
           {/* 1. Home Dashboard */}
           <Route index element={<DashboardRouter />} /> 
-          
+          <Route path="jobs" element={<JobOpenings />} />
+          <Route path="onboarding" element={<Onboarding />} />
+          <Route path="headcount" element={<HeadcountAnalytics />} />
           {/* 2. Me / Attendance Module */}
           <Route path="attendance" element={<AttendanceLayout />}>
             <Route index element={<AttendanceDashboard />} />

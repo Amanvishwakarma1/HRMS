@@ -41,9 +41,9 @@ export const createSalaryStructure = async (req, res) => {
     // Log audit
     await AuditLog.create({
       action: isNew ? 'Create Salary Structure' : 'Update Salary Structure',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(structure.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -109,9 +109,9 @@ export const updateSalaryStructure = async (req, res) => {
     // Log audit
     await AuditLog.create({
       action: 'Update Salary Structure',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(structure.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -138,9 +138,9 @@ export const deleteSalaryStructure = async (req, res) => {
     // Log audit
     await AuditLog.create({
       action: 'Delete Salary Structure',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: '',
       ipAddress: req.ip || '127.0.0.1'
@@ -219,9 +219,9 @@ export const cloneSalaryStructure = async (req, res) => {
     // Log audit
     await AuditLog.create({
       action: 'Clone Salary Structure',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(target.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'

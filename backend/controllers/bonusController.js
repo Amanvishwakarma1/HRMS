@@ -21,9 +21,9 @@ export const createBonus = async (req, res) => {
 
     await AuditLog.create({
       action: 'Assign Bonus',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: '',
       newValue: JSON.stringify(bonus.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -53,9 +53,9 @@ export const bulkAssignBonus = async (req, res) => {
 
     await AuditLog.create({
       action: 'Bulk Assign Bonus',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: '',
       newValue: `Created ${bonuses.length} bonus records for month ${month}`,
       ipAddress: req.ip || '127.0.0.1'
@@ -98,9 +98,9 @@ export const approveBonus = async (req, res) => {
 
     await AuditLog.create({
       action: `${status} Bonus`,
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: JSON.stringify(bonus.get({ plain: true })),
       ipAddress: req.ip || '127.0.0.1'
@@ -124,9 +124,9 @@ export const deleteBonus = async (req, res) => {
 
     await AuditLog.create({
       action: 'Delete Assigned Bonus',
-      userId: req.user?.id || 1,
-      username: req.user?.username || 'admin',
-      role: req.user?.role || 'admin',
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
       oldValue: oldVal,
       newValue: '',
       ipAddress: req.ip || '127.0.0.1'
